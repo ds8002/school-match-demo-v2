@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>School Match Walkthrough v2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one presenter stage. Sticky bar with the four steps in order, one big working pane, Back/Next at the bottom.
+   Sized for a classroom projector: large type, few elements per screen. Same identity as the School Match Hub. */
+:root{
+  --bg:#f3f6f4; --panel:#ffffff; --panel2:#f8faf9; --ink:#15211b; --muted:#56665e; --line:#d6e0da;
+  --pitch:#1d7349; --pitch-soft:#e2f0e8; --gold:#a87a08; --gold-soft:#f7ecd0;
+  --blue:#2f66a3; --blue-soft:#e3edf8; --you:#b9541a; --you-soft:#f9e8dc; --loop:#7446a8; --loop-soft:#efe6f8;
+  --bad:#b42318; --bad-soft:#fbe4e1;
+  --f-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif; --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1411; --panel:#151d19; --panel2:#111814; --ink:#e4ede8; --muted:#9aaba2; --line:#2a3731;
+  --pitch:#43b57c; --pitch-soft:#173226; --gold:#e2b440; --gold-soft:#3a2f12;
+  --blue:#73a7e0; --blue-soft:#16263a; --you:#ec955b; --you-soft:#3a2213; --loop:#ad8ae0; --loop-soft:#2a1f3a;
+  --bad:#f07a6c; --bad-soft:#3a1814; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1411; --panel:#151d19; --panel2:#111814; --ink:#e4ede8; --muted:#9aaba2; --line:#2a3731;
+  --pitch:#43b57c; --pitch-soft:#173226; --gold:#e2b440; --gold-soft:#3a2f12;
+  --blue:#73a7e0; --blue-soft:#16263a; --you:#ec955b; --you-soft:#3a2213; --loop:#ad8ae0; --loop-soft:#2a1f3a;
+  --bad:#f07a6c; --bad-soft:#3a1814; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font:17px/1.45 var(--f-body);margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+button{font:inherit;color:inherit}
+a{color:var(--pitch)}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--pitch);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.2px;text-wrap:balance;margin:0}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--panel);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topin{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{width:32px;height:32px;flex:none}
+.brand h1{font-size:24px;line-height:1}
+.brand small{display:block;font-size:13px;color:var(--muted)}
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto}
+ol.steps button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer;font-weight:600;font-size:15px}
+ol.steps .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--line);font:700 14px var(--f-mono)}
+ol.steps button.on{background:var(--pitch);border-color:var(--pitch);color:#fff}
+ol.steps button.on .n{background:#fff;color:var(--pitch)}
+ol.steps button.done .n{background:var(--pitch-soft);color:var(--pitch)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600;font-size:16px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--pitch)}
+.btn.go{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.btn.big{font-size:22px;padding:16px 28px;border-radius:14px;font-family:var(--f-display)}
+.btn.sm{padding:5px 10px;font-size:14px}
+.btn[hidden]{display:none}
+.btn.ok{border-color:var(--pitch);color:var(--pitch)}
+.btn.no{border-color:var(--bad);color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+main{padding-block:22px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px;min-width:0}
+.wrap>*{min-width:0}
+.head{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end;justify-content:space-between}
+.head h2{font-size:36px;line-height:1.05}
+.eyebrow{font:600 13px var(--f-mono);letter-spacing:.8px;text-transform:uppercase;color:var(--pitch)}
+.lede{color:var(--muted);max-width:70ch;margin:4px 0 0}
+.who{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:8px 14px;min-width:200px}
+.who .l{font:600 11px var(--f-mono);letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+.who b{font-family:var(--f-display);font-size:18px;line-height:1.15}
+.who .t{font-size:13px;color:var(--you);font-weight:600}
+.who.auto .t{color:var(--blue)}
+.problem{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;border-left:4px solid var(--bad);background:var(--panel);border-radius:0 12px 12px 0;padding:10px 16px}
+.problem b{font:700 24px var(--f-display);color:var(--bad)}
+.problem span{font-size:15px;color:var(--muted)}
+.funnel{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.funnel .fs{flex:1 1 110px;display:flex;flex-direction:column;gap:2px;padding:6px 10px;border-radius:10px;background:var(--panel2)}
+.funnel .fs .v{font:700 34px/1 var(--f-display)}
+.funnel .fs .l{font-weight:700;font-size:15px}
+.funnel .fs .t{font-size:12.5px;color:var(--muted)}
+.funnel .fs.last{background:var(--gold-soft)}
+.funnel .fs.last .v{color:var(--gold)}
+.funnel .fa{align-self:center;color:var(--muted);font-size:20px}
+.drvin{display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0}
+.drvin input{width:84px;font:15px var(--f-mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.drvin .u{font-size:13px;color:var(--muted)}
+.drvlab{font:600 11px var(--f-mono);color:var(--muted);margin-right:2px}
+.drvt td{vertical-align:top}
+tr.chg td{background:var(--gold-soft)}
+dl.calc,dl.other{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin:12px 0 0;font-size:15px}
+dl.calc dt,dl.other dt{color:var(--muted)}
+dl.calc dd,dl.other dd{margin:0}
+dl.other dt{font-weight:600;color:var(--ink)}
+ol.steps button.drv{border-style:dashed}
+ol.steps button.drv.on{border-style:solid}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;min-width:0}
+.card h3{font-size:21px;margin-bottom:8px}
+.muted{color:var(--muted)} .small{font-size:14px}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:13px;font-weight:600;background:var(--panel2);border:1px solid var(--line);white-space:nowrap}
+.tag.g{background:var(--pitch-soft);color:var(--pitch);border-color:transparent}
+.tag.b{background:var(--blue-soft);color:var(--blue);border-color:transparent}
+.tag.o{background:var(--gold-soft);color:var(--gold);border-color:transparent}
+.tag.r{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.tag.y{background:var(--you-soft);color:var(--you);border-color:transparent}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+/* step 1 */
+.launch{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+.chan{display:flex;flex-direction:column;gap:10px}
+.ch{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel)}
+.ch .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);font:700 14px var(--f-mono);color:var(--muted)}
+.ch b{font-family:var(--f-display);font-size:19px;display:block;line-height:1.15}
+.ch .d{font-size:14px;color:var(--muted)}
+.ch .res{font:700 22px var(--f-display);color:var(--muted);text-align:right;white-space:nowrap}
+.ch.run{border-color:var(--blue)} .ch.run .ic{border-color:var(--blue);border-top-color:transparent;animation:spin .8s linear infinite}
+.ch.ok .ic{background:var(--pitch);border-color:var(--pitch);color:#fff}
+.ch.ok .res{color:var(--pitch)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.start{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.found{display:flex;flex-direction:column;gap:14px}
+.sum{border-radius:14px;padding:16px 18px;background:var(--pitch-soft);border:1px solid transparent}
+.sum p{margin:0;font-size:21px;line-height:1.35}
+.sum strong{font-family:var(--f-display);font-size:26px}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.split .card h3{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.split .card h3 .num{font-size:28px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:14px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;background:var(--panel2);animation:pop .3s ease-out both}
+@keyframes pop{from{transform:scale(.85);opacity:.3}to{transform:none;opacity:1}}
+/* step 2 */
+.crit{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.crit .card{display:flex;flex-direction:column;gap:6px}
+.crit .k{font:700 13px var(--f-mono);color:var(--muted)}
+.crit label{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.crit input[type=range]{flex:1;accent-color:var(--pitch)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);background:var(--panel2);white-space:nowrap}
+tr.row{cursor:pointer} tr.row:hover td{background:var(--panel2)}
+tr.cut td{border-bottom:3px solid var(--pitch)}
+td.r,th.r{text-align:right}
+.dots{display:inline-flex;gap:3px;vertical-align:middle}
+.dots i{width:11px;height:11px;border-radius:3px;background:var(--line);display:block}
+.dots i.on{background:var(--pitch)}
+.tot{font:700 18px var(--f-display)}
+.detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.detail>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px;background:var(--panel2)}
+.detail b{display:block;font-family:var(--f-display);font-size:16px;margin-bottom:2px}
+/* step 3 */
+.act{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:16px;align-items:start}
+.queue{display:flex;flex-direction:column;gap:4px;max-height:640px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:6px}
+.queue button{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;border:0;background:none;border-radius:8px;padding:7px 8px;cursor:pointer;font-size:15px}
+.queue button:hover{background:var(--panel2)}
+.queue button.on{background:var(--pitch-soft)}
+.queue .rk{font:600 12px var(--f-mono);color:var(--muted)}
+.queue .st{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.queue .st.a{background:var(--pitch)} .queue .st.s{background:var(--bad)}
+.plan{display:flex;flex-direction:column;gap:14px}
+.lvl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
+.lvl button{border:0;background:none;border-radius:9px;padding:8px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;color:var(--ink);font:inherit}
+.lvl button:hover{background:var(--panel)}
+.lvl button b{font:700 17px var(--f-display)}
+.lvl button span{font-size:13.5px;color:var(--muted)}
+.lvl button.on{background:var(--panel);box-shadow:inset 0 0 0 2px var(--pitch)}
+.lvl button .rec{font:600 11px var(--f-mono);color:var(--pitch);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.tp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tp>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel)}
+.tp h4{margin:0 0 4px;font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.tp ul{margin:0;padding-left:18px;font-size:15px}.tp li{margin:2px 0}
+.tp>div.warn{border-color:transparent;background:var(--gold-soft)}
+.sched{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 12px;border-radius:10px;background:var(--blue-soft);color:var(--blue);font-size:14.5px;font-weight:600}
+textarea[readonly]{background:var(--panel2)}
+@media (max-width:700px){.lvl,.tp{grid-template-columns:1fr}}
+.plan .nm{font:700 30px/1.05 var(--f-display)}
+.q3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.q3>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel)}
+.q3 .l{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.q3 p{margin:4px 0 0;font-size:15.5px}
+ol.todo{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;counter-reset:t}
+ol.todo li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:start;font-size:15.5px;counter-increment:t}
+ol.todo li::before{content:counter(t);width:24px;height:24px;border-radius:50%;background:var(--pitch-soft);color:var(--pitch);font:700 13px var(--f-mono);display:grid;place-items:center}
+ol.todo .who{font-size:12.5px;white-space:nowrap}
+textarea{width:100%;min-height:380px;font:15px/1.5 var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+.row2{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* v2: ladder */
+.ladder{display:flex;flex-direction:column;gap:12px;border-left:4px solid var(--gold)}
+ol.rungs{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);gap:6px;align-items:stretch}
+ol.rungs li{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel2)}
+ol.rungs li:nth-child(7){background:var(--gold-soft);border-color:transparent}
+ol.rungs li:nth-child(9){background:var(--blue-soft);border-color:transparent}
+ol.rungs li:nth-child(9) .amt{color:var(--blue)}
+ol.rungs li.ar{border:0;background:none;padding:0;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+ol.rungs .rn{font:700 12px var(--f-mono);color:var(--muted)}
+ol.rungs b{font:700 19px/1.1 var(--f-display)}
+ol.rungs .amt{font-size:14px;color:var(--pitch);font-weight:600}
+ol.rungs .cnt{font-size:13px;font-weight:700;color:var(--you);margin-top:auto;padding-top:4px}
+.qh{font:600 11px var(--f-mono);letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:8px 8px 2px}
+.newstrip{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;border-left:4px solid var(--blue);background:var(--panel);border-radius:0 12px 12px 0;padding:10px 16px;font-size:15px}
+.newstrip b{font:700 22px var(--f-display);color:var(--blue)}
+@media (max-width:900px){ol.rungs{grid-template-columns:minmax(0,1fr)}ol.rungs li.ar{display:none}}
+/* v3: value x warmth grid */
+.vw{display:flex;flex-direction:column;gap:12px;border-left:4px solid var(--blue)}
+.vgrid{display:grid;grid-template-columns:26px minmax(0,1fr) 78px minmax(0,1fr);gap:8px}
+.vgrid .ax{font:600 12px var(--f-mono);color:var(--muted);letter-spacing:.4px;text-align:center}
+.vgrid .ax.y{grid-column:1;grid-row:1/3;writing-mode:vertical-rl;transform:rotate(180deg)}
+.vgrid .ax.x{grid-column:2/5;grid-row:3}
+.vc{display:flex;flex-direction:column;gap:4px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--panel2);color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.vc:hover{border-color:var(--ink)}
+.vc.hc{grid-column:2;grid-row:1;background:var(--blue-soft);border-color:transparent}
+.vc.hw{grid-column:4;grid-row:1;background:var(--pitch-soft);border-color:transparent}
+.vc.lc{grid-column:2;grid-row:2}
+.vc.lw{grid-column:4;grid-row:2;background:var(--gold-soft);border-color:transparent}
+.vc.on{outline:3px solid var(--ink);outline-offset:1px}
+.vc .vt{font:600 12px var(--f-mono);text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.vc b{font:700 22px/1.1 var(--f-display)}
+.vc .vch{font-size:14.5px;line-height:1.35}
+.vc .vn{font-size:14px;font-weight:700;margin-top:auto;padding-top:6px}
+.vc .vsub{font-size:13px;color:var(--muted)}
+.bridge{grid-column:3;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:700 12px var(--f-mono);color:var(--blue);gap:2px}
+.bridge .arr{font-size:22px;line-height:1}
+@media (max-width:760px){.vgrid{grid-template-columns:minmax(0,1fr)}.vgrid>*{grid-column:1 !important;grid-row:auto !important}.vgrid .ax.y{writing-mode:horizontal-tb;transform:none}.bridge{flex-direction:row;gap:8px}}
+/* step 4 */
+.kan{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px}
+.col{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:220px}
+.col h4{margin:0 0 2px;font:700 16px var(--f-display);display:flex;justify-content:space-between}
+.col.win{background:var(--gold-soft);border-color:transparent}
+.card2{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:13.5px;line-height:1.25;animation:pop .35s ease-out both;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.card2 .s{color:var(--muted);font-size:12px}
+.col.win .card2{padding:6px 8px;flex-direction:column}
+.months{display:flex;gap:4px;flex-wrap:wrap}
+.months span{font:600 12px var(--f-mono);padding:4px 8px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.months span.on{background:var(--pitch);color:#fff;border-color:var(--pitch)}
+.months span.rev{border-color:var(--gold);color:var(--gold)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.kpi .v{font:700 32px/1.1 var(--f-display)}
+.kpi .t{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:150px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:15px}
+.bar .tr{height:18px;background:var(--panel2);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.bar .tr i{display:block;height:100%;background:var(--pitch)}
+.bar .tr i.lt{background:var(--blue)}
+.bar .num{text-align:right}
+ul.learn{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15.5px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;z-index:60;max-width:calc(100% - 32px)}
+.note{font-size:13px;color:var(--muted)}
+@media (max-width:900px){
+  .launch,.act{grid-template-columns:minmax(0,1fr)}
+  .q3,.detail{grid-template-columns:minmax(0,1fr)}
+  .queue{max-height:260px}
+  .head h2{font-size:28px}
+  .bar{grid-template-columns:100px minmax(0,1fr) 56px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<header class="top"><div class="topin">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="7" fill="var(--pitch)"/><path d="M16 5v22M5 16h22" stroke="var(--panel)" stroke-width="1.6" opacity=".55"/><circle cx="16" cy="16" r="5.2" fill="none" stroke="var(--panel)" stroke-width="1.6"/><circle cx="23.5" cy="9" r="2.6" fill="var(--gold)"/></svg>
+    <div><h1>School Match</h1><small>Donor prospecting for DC SCORES</small></div>
+  </div>
+  <ol class="steps" id="steps" aria-label="Steps"></ol>
+  <button class="btn sm" id="btnReset" type="button">Start over</button>
+</div></header>
+<main><div class="wrap" id="view"></div></main>
+<div id="toastHost"></div>
+
+<script>
+window.HUB_DATA = {"built":"2026-10-24","schools":[{"n":"Ketcham Elementary School","w":8,"g":"ES","st":"sponsored","sp":"Amazon","src":"public posts","lat":38.86605,"lon":-76.983623,"stale":false,"yr":2026},{"n":"Leckie Education Campus","w":8,"g":"EC","st":"sponsored","sp":"Amazon","src":"public posts","lat":38.828204,"lon":-77.012894,"stale":false,"yr":2026},{"n":"Excel Academy","w":8,"g":"EC","st":"sponsored","sp":"CareFirst + Washington Spirit","src":"public posts","lat":38.85977,"lon":-76.995357,"stale":false,"yr":2026},{"n":"Brightwood Elementary School","w":4,"g":"ES","st":"sponsored","sp":"CareFirst","src":"public posts","lat":38.960543,"lon":-77.030691,"stale":false,"yr":2025},{"n":"Raymond Elementary School","w":4,"g":"ES","st":"sponsored","sp":"Pepco","src":"public posts","lat":38.935819,"lon":-77.026435,"stale":false,"yr":2025},{"n":"Kimball Elementary School","w":7,"g":"ES","st":"possibly_sponsored","sp":"Hogan Lovells underwrote 2017","src":"","lat":38.883311,"lon":-76.957181,"stale":false,"yr":2026},{"n":"Stanton Elementary School","w":8,"g":"ES","st":"open","sp":"","src":"","lat":38.85928,"lon":-76.968492,"stale":false,"yr":2026},{"n":"Beers Elementary School","w":7,"g":"ES","st":"open","sp":"","src":"","lat":38.864357,"lon":-76.955607,"stale":false,"yr":2026},{"n":"Ida B. Wells Middle School","w":4,"g":"MS","st":"sponsored","sp":"CVS Health","src":"FY26 gift record","lat":38.966863,"lon":-77.01927,"stale":false,"yr":2026},{"n":"Marie Reed Elementary School","w":1,"g":"ES","st":"sponsored","sp":"Volkswagen Group of America","src":"FY26 gift record","lat":38.919114,"lon":-77.040818,"stale":false,"yr":2025},{"n":"Whittier Elementary School","w":4,"g":"ES","st":"open","sp":"","src":"","lat":38.965865,"lon":-77.019241,"stale":false,"yr":2026},{"n":"The Sojourner Truth School PCS","w":5,"g":"PCS","st":"open","sp":"","src":"","lat":38.936804,"lon":-76.978598,"stale":false,"yr":2025},{"n":"LaSalle-Backus Elementary School","w":4,"g":"ES","st":"open","sp":"","src":"","lat":38.95998,"lon":-76.999885,"stale":false,"yr":2026},{"n":"Houston Elementary School","w":7,"g":"ES","st":"open","sp":"","src":"","lat":38.905423,"lon":-76.92995,"stale":false,"yr":2026},{"n":"Thomson Elementary School","w":2,"g":"ES","st":"open","sp":"","src":"","lat":38.903504,"lon":-77.028432,"stale":false,"yr":2026},{"n":"John Francis Education Campus","w":2,"g":"EC","st":"open","sp":"","src":"","lat":38.907477,"lon":-77.052323,"stale":false,"yr":2026},{"n":"Hart Middle School","w":8,"g":"MS","st":"open","sp":"","src":"","lat":38.837745,"lon":-76.997181,"stale":false,"yr":2025},{"n":"Barnard Elementary School","w":4,"g":"ES","st":"open","sp":"","src":"","lat":38.948238,"lon":-77.017779,"stale":false,"yr":2026},{"n":"Bancroft Elementary School","w":1,"g":"ES","st":"open","sp":"","src":"","lat":38.934326,"lon":-77.040556,"stale":false,"yr":2026},{"n":"Thomas Elementary School","w":7,"g":"ES","st":"open","sp":"","src":"","lat":38.901286,"lon":-76.952113,"stale":false,"yr":2026},{"n":"Seaton Elementary School","w":2,"g":"ES","st":"sponsored","sp":"Rios Partners","src":"FY26 gift record","lat":38.910626,"lon":-77.024885,"stale":true,"yr":2023},{"n":"Moten Elementary School","w":8,"g":"ES","st":"open","sp":"","src":"","lat":38.856665,"lon":-76.982946,"stale":true,"yr":2023},{"n":"Van Ness Elementary School","w":8,"g":"ES","st":"open","sp":"","src":"","lat":38.876804,"lon":-76.999246,"stale":false,"yr":2026},{"n":"Burrville Elementary School","w":7,"g":"ES","st":"open","sp":"","src":"","lat":38.900573,"lon":-76.924461,"stale":false,"yr":2026},{"n":"Jefferson Middle School Academy","w":6,"g":"MS","st":"open","sp":"","src":"","lat":38.879878,"lon":-77.022913,"stale":true,"yr":2022},{"n":"Sousa Middle School","w":7,"g":"MS","st":"open","sp":"","src":"","lat":38.883902,"lon":-76.953161,"stale":false,"yr":2024},{"n":"MacFarland Middle School","w":4,"g":"MS","st":"open","sp":"","src":"","lat":38.943616,"lon":-77.027779,"stale":true,"yr":2022},{"n":"Brookland Middle School","w":5,"g":"MS","st":"open","sp":"","src":"","lat":38.938483,"lon":-76.991062,"stale":false,"yr":2025},{"n":"District of Columbia International School","w":4,"g":"EC","st":"open","sp":"","src":"","lat":38.972937,"lon":-77.034203,"stale":true,"yr":2023},{"n":"Washington Latin PCS - 2nd Street Middle School","w":4,"g":"PCS","st":"open","sp":"","src":"","lat":38.953896,"lon":-77.013821,"stale":true,"yr":2023},{"n":"Paul PCS - Middle School","w":4,"g":"PCS","st":"open","sp":"","src":"","lat":38.961373,"lon":-77.024725,"stale":true,"yr":2023},{"n":"E.L. Haynes PCS - Middle School","w":1,"g":"PCS","st":"open","sp":"","src":"","lat":38.934329,"lon":-77.024246,"stale":true,"yr":2022},{"n":"Two Rivers PCS - Young Middle School","w":5,"g":"PCS","st":"open","sp":"","src":"","lat":38.902116,"lon":-76.970962,"stale":true,"yr":2023},{"n":"Inspired Teaching Demonstration PCS","w":5,"g":"PCS","st":"open","sp":"","src":"","lat":38.923693,"lon":-77.002767,"stale":false,"yr":2024},{"n":"KIPP DC - Quest Academy PCS","w":7,"g":"PCS","st":"open","sp":"","src":"","lat":38.891956,"lon":-76.924647,"stale":false,"yr":2024},{"n":"Tubman Elementary School","w":1,"g":"ES","st":"sponsored","sp":"Panasonic","src":"FY26 gift record","lat":38.9291877,"lon":-77.0286962,"stale":false,"yr":2026},{"n":"Amidon-Bowen Elementary School","w":6,"g":"ES","st":"sponsored","sp":"D.C. United Foundation","src":"FY26 gift record","lat":38.8798693,"lon":-77.0181314,"stale":false,"yr":2026},{"n":"Shirley Chisholm Elementary School","w":6,"g":"ES","st":"sponsored","sp":"Akin Gump","src":"FY26 gift record","lat":38.8802965,"lon":-76.9921158,"stale":false,"yr":2026},{"n":"McKinley Technology High School","w":5,"g":"HS","st":"sponsored","sp":"District Soccer","src":"FY26 gift record","lat":38.9148887,"lon":-77.0045204,"stale":false,"yr":2026}],"firms":[{"id":"f1","n":"Deloitte","form":"LLP (partnership)","office":"1919 N Lynn St, Arlington VA 22209","lat":38.8975341,"lon":-77.0699765,"geo":"address","pipe":"upgrade","ch":["Cup","Gala"],"C":3,"A":2,"R":3,"res":"verified","ec":"Big Four; Foundation runs local grants in ~30 US markets (DC participation not confirmed)","ea":"Education/after-school enrichment, but aimed at business/tech career readiness","er":"Existing relationship (details held by DC SCORES) + SCORES Cup team","url":"https://www.deloitte.com/us/en/about/deloitte-foundation/deloitte-foundation-local-education-grants.html","focus":"Deloitte Foundation local impact grants: education nonprofits incl. after-school/summer enrichment; does not accept unsolicited requests","role":"Washington Metro managing partner; Greater Washington community-impact leader","budget":"Local office community-impact / Cup engagement budget + partners\u0027 personal or DAF gifts; the Foundation does not accept unsolicited requests","pitch":"Your Cup team already plays for DC SCORES; for $35K a year your people get a school of their own, with game days they can coach.","flags":"Deloitte Foundation DC-market participation: UNKNOWN (not confirmed in 05c). Dollar amount of local office giving: UNKNOWN","sp":"","nosign":true},{"id":"f2","n":"Marriott International","form":"C-corp","office":"7750 Wisconsin Ave, Bethesda MD 20814","lat":38.9876218,"lon":-77.0954899,"geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":3,"res":"verified","ec":"Fortune 500 HQ; Bethesda associates gave ~25,000 local volunteer hours in 2024","ea":"Youth + volunteering; not sport/arts specifically","er":"Existing relationship (details held by DC SCORES) + SCORES Cup team","url":"https://serve360.marriott.com/wp-content/uploads/2018/10/2018_Serve_360_Report.pdf","focus":"Serve 360 \u0027Empower Through Opportunity\u0027: youth workforce readiness; goal of 50% of volunteer hours serving children/youth","role":"VP Global Social Impact (Serve 360); HQ associate-engagement lead","budget":"Marketing / associate-engagement budget; booking is the company\u0027s tax advisor\u0027s call","pitch":"Turn your HQ\u0027s local volunteer hours into one school your associates coach and cheer every game day for three years.","flags":"","sp":"","nosign":false},{"id":"f3","n":"Venable","form":"LLP (partnership)","office":"600 Massachusetts Ave NW, Washington DC 20001","lat":38.9013438,"lon":-77.0202236,"geo":"address","pipe":"upgrade","ch":["Cup","Grant"],"C":3,"A":3,"R":2,"res":"verified","ec":"~$1.16M across three 2024 DC/NoVA announcements; $3.9M to 477 orgs, 154 in DC/NoVA","ea":"Out-of-school time is named under its Education focus; youth impact is a focus area","er":"SCORES Cup team (01 sec.2)","url":"https://www.venable.com/community/foundation","focus":"Venable Foundation: 8 focus areas; out-of-school time sits under its Education focus; youth impact; from 2027, DC/NoVA applications limited to recent grantees and invited organizations (no open proposal cycles); avg grant ~$10K","role":"Venable Foundation board/grants committee chair; DC office managing partner","budget":"Invitation via the Cup team and partners + Partner Circle (Foundation no longer takes open proposals in DC/NoVA from 2027)","pitch":"Out-of-school time is part of your Foundation\u0027s Education focus; Thomson Elementary is half a mile from your office and needs a 3-year partner.","flags":"","sp":"","nosign":false},{"id":"f4","n":"JPMorganChase","form":"C-corp","office":"875 15th St NW, Washington DC 20005 (regional HQ, Bowen Bldg)","lat":38.9010504,"lon":-77.0335356,"geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"verified","ec":"$6M regional youth commitment (Dec 2018; 5 districts); $150K Serve DC grant (2022)","ea":"Youth + DCPS, but career/economic-opportunity framing, not sport/arts","er":"SCORES Cup team; Year Up NCR employer","url":"https://www.jpmorganchase.com/newsroom/press-releases/2018/jpmc-commits-6mm-to-prepare-greater-washington-area-students","focus":"Greater Washington: $6M IT career-pathways commitment (Dec 2018; DCPS one of 5 districts); Fellowship Initiative/Becoming a Man in DCPS schools in Wards 5-8 (launched 2022)","role":"Greater Washington market leader; Mid-Atlantic philanthropy / community engagement lead","budget":"Regional marketing/brand sponsorship (C-corp under 1% floor) or Chase local philanthropy","pitch":"You already invest in DCPS students in Wards 5-8; a 3-year school partnership puts your ~600 DC employees on the field with them.","flags":"Cup team per public team page; no FY26 gift on record: verify","sp":"","nosign":false},{"id":"f5","n":"Latham \u0026 Watkins","form":"LLP (partnership)","office":"555 11th St NW, Suite 1000, Washington DC 20004","lat":38.8962937,"lon":-77.0264438,"geo":"address","pipe":"upgrade","ch":["Cup","Gala"],"C":3,"A":2,"R":2,"res":"verified","ec":"Recognized 11 times as Children\u0027s Law Center Champion for Children","ea":"DC children, but legal/pro bono frame","er":"SCORES Cup team; Year Up NCR","url":"https://www.lw.com/en/news/2026/05/latham-recognized-as-2025-champion-for-children","focus":"DC office: recognized 11 times as Children\u0027s Law Center Champion for Children + pro bono for DC children","role":"DC office managing partner; DC pro bono / community committee chair","budget":"Partners\u0027 personal/DAF giving pooled by the Cup team + office community budget","pitch":"Your DC office has been recognized 11 times as a Champion for Children; a Cup team that adopts a school makes that visible every week.","flags":"","sp":"","nosign":false},{"id":"f6","n":"Akin Gump","form":"LLP (partnership)","office":"2001 K St NW (Robert S. Strauss Tower), Washington DC 20006","lat":38.9029823,"lon":-77.0452251,"geo":"address","pipe":"renew","ch":["Cup","School"],"C":2,"A":3,"R":3,"res":"verified","ec":"WBJ Corporate Philanthropy award; $50K Tyler library gift (2007, dated)","ea":"Already runs a long-term school partnership: the product\u0027s exact model","er":"SCORES Cup team","url":"https://www.akingump.com/en/news-insights/washington-business-journal-profiles-akin-gump-john-tyler.html","focus":"Long-running adopt-a-school partnership with John Tyler ES (documented 2009-2018) via the Akin Gump School Partnership Project (Washington Lawyers\u0027 Committee program)","role":"Washington office partner-in-charge; School Partnership Project chair","budget":"Partners\u0027 personal/DAF giving + School Partnership Project; Cup team pooling","pitch":"You\u0027ve stood by one DC school for years; give a second one an after-school team of poet-athletes.","flags":"$50K Tyler library gift is from 2007 (dated) | Already sponsors Chisholm ES (FY26 gift record): renew, or grow to a full school","sp":"Shirley Chisholm Elementary School","nosign":false},{"id":"f7","n":"Volkswagen Group of America","form":"Corporation (US subsidiary of Volkswagen AG)","office":"1950 Opportunity Way, Reston VA 20190","lat":38.9546426,"lon":-77.3624037,"geo":"address","pipe":"renew","ch":["Cup","School","Gala match"],"C":2,"A":3,"R":3,"res":"verified","ec":"$25K BGCGW gift (2016); U.S. Soccer youth funding (amounts not public)","ea":"Soccer + underrepresented youth; donated a 2019 Women\u0027s World Cup ad to America SCORES","er":"Cup team; DC SCORES logo wall; 2019 America SCORES ad; 2010 Cafritz Youth Partnership Award with DC SCORES","url":"https://ussoccer.com/stories/2026/10/federation/volkswagen-renew-presenting-partnership-increased-investment","focus":"Youth soccer access via U.S. Soccer presenting partnership (renewed Oct 2026; youth-access focus); Boys \u0026 Girls Clubs of Greater Washington Fairfax partner ($25K; 2016)","role":"VWGoA community relations / corporate communications lead; brand-partnerships lead","budget":"Brand/marketing sponsorship (jersey logo) - fits its U.S. Soccer positioning","pitch":"You put America SCORES on TV during the 2019 World Cup; put Volkswagen on the jerseys of a Ward 8 school for three seasons.","flags":"U.S. Soccer youth funding amounts not public: UNKNOWN | Already sponsors Marie Reed ES (FY26 gift record): renew, or add a second school","sp":"Marie Reed Elementary School","nosign":false},{"id":"f8","n":"Williams \u0026 Connolly","form":"LLP (partnership)","office":"680 Maine Ave SW (The Wharf), Washington DC 20024","lat":38.8779567,"lon":-77.0229597,"geo":"address","pipe":"upgrade","ch":["Cup"],"C":2,"A":2,"R":2,"res":"verified","ec":"WBJ \u0027most philanthropic\u0027 law firms (ranked by pro bono hours); cash amounts not public","ea":"DC schools focus (high school/civics, not sport/arts)","er":"SCORES Cup team; Year Up NCR","url":"https://www.wc.com/Firm/Diversity-Inclusion/Outreach","focus":"~20 years with Thurgood Marshall Academy (board service, tutoring, debate); Dunbar HS Street Law","role":"Firm chair / DC community-outreach partner","budget":"Partners\u0027 personal/DAF giving + Cup team pooling","pitch":"Jefferson Middle School Academy is a block from your office; your Cup team could be its partner for three years.","flags":"Giving amounts not public: UNKNOWN","sp":"","nosign":false},{"id":"f9","n":"GEICO","form":"C-corp (Berkshire Hathaway subsidiary)","office":"7272 Wisconsin Ave (The Wilson), Bethesda MD 20814 (HQ since June 2026; moved from 5260 Western Ave)","lat":38.9820253,"lon":-77.0936491,"geo":"address","pipe":"peer","ch":[],"C":3,"A":2,"R":1,"res":"verified","ec":"BBAR $100K+ (2024); foundation grants paid $3.3M (2023) and $6.8M (2022) per 990-PF","ea":"Education for diverse communities; national, STEM/early-childhood tilt","er":"Funds a DC SCORES peer (BBAR); no known tie","url":"https://geico.com/philanthropic-foundation","focus":"GEICO Philanthropic Foundation: education, community engagement, equity; application cycle (last listed Oct-Dec 2025); grants paid ~$3.3M (2023), $6.8M (2022)","role":"Foundation administrator / community relations manager","budget":"GEICO Philanthropic Foundation (open cycle) - grant-fit letter","pitch":"Three years of after-school soccer and poetry for the DC kids closest to your new Bethesda HQ.","flags":"Foundation 2026 application window not confirmed (last listed Oct 1-Dec 31 2025)","sp":"","nosign":false},{"id":"f10","n":"KPMG","form":"LLP (partnership)","office":"1801 K St NW, Suite 12000, Washington DC 20006","lat":38.9028302,"lon":-77.0420628,"geo":"address","pipe":"peer","ch":[],"C":2,"A":3,"R":1,"res":"verified","ec":"KPMG U.S. Foundation gave $50-99K to BBAR (2024)","ea":"Literacy is the poetry half of DC SCORES","er":"Funds a DC SCORES peer (BBAR); no known tie","url":"https://kpmg.com/us/en/careers-and-culture/community-impact/family-for-literacy.html","focus":"KPMG U.S. Foundation: Friends \u0026 Family for Literacy (millions of books via First Book, a DC nonprofit); DC College Access Program","role":"Washington DC office managing partner; KPMG U.S. Foundation literacy program lead","budget":"KPMG U.S. Foundation (literacy fund) + office volunteer budget","pitch":"Your literacy fund puts books in kids\u0027 hands; DC SCORES gets them writing and performing their own poems.","flags":"","sp":"","nosign":false},{"id":"f11","n":"Carlyle","form":"C-corp (since 2020)","office":"1001 Pennsylvania Ave NW, Washington DC 20004 (global HQ)","lat":38.8954637,"lon":-77.0264855,"geo":"address","pipe":"upgrade","ch":["Cup"],"C":2,"A":1,"R":2,"res":"verified","ec":"Firm capacity high; employee gift matching (FY2025 10-K); no grant program found","ea":"Generic community/volunteering","er":"SCORES Cup team; Year Up NCR","url":"https://www.sec.gov/Archives/edgar/data/1527166/000152716626000009/cg-20251231.htm","focus":"No grant program or foundation found; matches employee gifts (2025: 280+ employees gave 500+ gifts; matched) + office volunteering (FY2025 10-K)","role":"Head of corporate citizenship / employee engagement (verify title)","budget":"Employee-engagement / marketing budget; senior partners\u0027 personal giving ONLY via a board introduction (no individual profiling)","pitch":"A DC-headquartered firm, a DC school two miles away, and a Cup team that already plays for it.","flags":"Decision-maker title [verify]","sp":"","nosign":false},{"id":"f12","n":"Capital One","form":"C-corp","office":"1680 Capital One Dr, McLean VA 22102","lat":38.9242279,"lon":-77.2134433,"geo":"address","pipe":"peer","ch":[],"C":3,"A":1,"R":1,"res":"verified","ec":"BBAR $100K+ (2024); ten $250K grants to Greater DC nonprofits (2021 round)","ea":"Financial wellbeing/mobility; no sport/arts","er":"Funds BBAR (Ward 8 peer); Year Up employer","url":"https://www.capitalone.com/about/our-commitments/3.5-million-in-grant-funding/","focus":"Impact Initiative: socioeconomic mobility; a 2021 round of ten $250K grants to Greater DC nonprofits, incl. Year Up NCR and Per Scholas NCR","role":"Head of Community Impact, NCR [unconfirmed]","budget":"Brand/community marketing budget (C-corp, 1% floor) + Impact Initiative","pitch":"You already support Building Bridges Across the River ($100K+ in 2024) and the Bridge Spot (2023); Stanton Elementary is in the same Ward 8 neighborhoods.","flags":"Decision-maker title unconfirmed; $250K grants were a 2021 round","sp":"","nosign":false},{"id":"f13","n":"Boeing","form":"C-corp","office":"929 Long Bridge Dr, Arlington VA 22202 (global HQ)","lat":38.8645633,"lon":-77.0501894,"geo":"address","pipe":"peer","ch":[],"C":3,"A":1,"R":1,"res":"verified","ec":"BBAR $100K+ (2024); global HQ in Arlington","ea":"STEM/workforce focus; weak fit unless framed as \u0027Our Future\u0027","er":"Funds BBAR; no known tie","url":"https://www.boeing.com/content/dam/boeing/boeingdotcom/principles/community-engagement/pdf/national-capital-region-grantmaking-guidelines.pdf","focus":"National Capital Region grantmaking: Our Future / Our Heroes / Our Homes; STEM/workforce; invitation-only","role":"National Capital Region community investor (Global Engagement)","budget":"Global Engagement (NCR community investor must invite) - human introduction required","pitch":"Hart Middle School is just across the river from your HQ: three years of \u0027Our Future\u0027 for 6th-8th graders.","flags":"NCR guidelines PDF (2024 edition) returned 404 on 2026-10-15: confirm the current cycle","sp":"","nosign":false},{"id":"f14","n":"Booz Allen","form":"C-corp","office":"8283 Greensboro Dr, McLean VA 22102","lat":38.923272615,"lon":-77.231062588,"geo":"address","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"verified","ec":"BBAR $50-99K (2024)","ea":"STEM/AI; weak fit without a STEM angle","er":"Funds DC youth peers (Beacon House, BGCGW); no tie","url":"https://www.boozallen.com/about/social-impact/foundation.html","focus":"Booz Allen Foundation: place-based focus on specific neighborhoods in Washington DC and San Diego; funds Beacon House and BGCGW; STEM/AI tilt; does not accept unsolicited requests","role":"Booz Allen Foundation executive director / program officer","budget":"Booz Allen Foundation by introduction only (no unsolicited requests) - ask shared grantees (Beacon House/BGCGW) or the board for an intro; nurture","pitch":"DC neighborhoods are already a place-based focus of your Foundation; Sousa Middle School\u0027s poet-athletes are ready for a partner.","flags":"","sp":"","nosign":false},{"id":"f15","n":"Uber","form":"C-corp","office":"No current DC corporate office confirmed (2015: 1717 Rhode Island Ave NW); Ward 7 Greenlight driver hub at 3921 Minnesota Ave NE used for geo-match","lat":38.8939247,"lon":-76.9496205,"geo":"address","pipe":"upgrade","ch":["Cup","OWOC"],"C":1,"A":1,"R":2,"res":"verified","ec":"No local giving evidence found","ea":"Youth sports only as a commercial teen-account product","er":"SCORES Cup team","url":"https://www.sportstravelmagazine.com/uber-signs-first-national-youth-sports-deal-with-us-sports-camps/","focus":"No current DC youth-giving program found; 2026 youth-sports teen-account deal with US Sports Camps (commercial)","role":"DC general manager / public-policy \u0026 community lead","budget":"Cup team pooling / employee crowd-share ($117/mo); escalate on reply","pitch":"Your Ward 7 driver hub is half a mile from Thomas Elementary: your Cup team can fund its season.","flags":"No current DC corporate office confirmed; match uses the Ward 7 driver hub","sp":"","nosign":false},{"id":"f16","n":"Kirkland \u0026 Ellis","form":"law","office":"1301 Pennsylvania Ave NW, Washington DC","lat":38.8963283,"lon":"-77.0302360","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"draft","ec":"Large national law firm with a major DC office (capacity: draft, verify)","ea":"Pro bono and community programs; no stated youth-sport or literacy focus found yet (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f17","n":"Crowell \u0026 Moring","form":"law","office":"1001 Pennsylvania Ave NW, Washington DC","lat":38.8954637,"lon":"-77.0264855","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"draft","ec":"Large national law firm with a major DC office (capacity: draft, verify)","ea":"Pro bono and community programs; no stated youth-sport or literacy focus found yet (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f18","n":"Arnold \u0026 Porter","form":"law","office":"601 Massachusetts Ave NW, Washington DC","lat":38.9021529,"lon":"-77.0206199","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"draft","ec":"Large national law firm with a major DC office (capacity: draft, verify)","ea":"Pro bono and community programs; no stated youth-sport or literacy focus found yet (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f19","n":"Willkie Farr \u0026 Gallagher","form":"law","office":"1875 K St NW, Washington DC","lat":38.9028056,"lon":"-77.0430438","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":1,"R":2,"res":"draft","ec":"Large national law firm with a major DC office (capacity: draft, verify)","ea":"No stated youth focus found yet (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f20","n":"Orrick","form":"law","office":"Downtown DC office (approximate; verify)","lat":38.9035,"lon":"-77.0365","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":3,"A":1,"R":2,"res":"draft","ec":"Large national law firm with a major DC office (capacity: draft, verify)","ea":"No stated youth focus found yet (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f21","n":"Bates White","form":"consulting","office":"2001 K St NW, Washington DC","lat":38.9029823,"lon":"-77.0452251","geo":"address","pipe":"upgrade","ch":["Cup"],"C":2,"A":2,"R":2,"res":"draft","ec":"DC-headquartered economics consultancy (draft, verify)","ea":"DC home office; youth focus not yet confirmed","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f22","n":"HITT Contracting","form":"construction","office":"2900 Fairview Park Dr, Falls Church VA","lat":38.8649485,"lon":"-77.2139034","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":3,"R":2,"res":"draft","ec":"Large regional general contractor (draft, verify)","ea":"Business alignment: builds in DC and needs community ties near job sites (the client\u0027s own Clark example, Q35); middle-school site visits fit Q21","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f23","n":"Turner Construction","form":"construction","office":"DC-area office (approximate; verify)","lat":38.903,"lon":"-77.0330","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":3,"A":3,"R":2,"res":"draft","ec":"National general contractor with a DC office (draft, verify)","ea":"Business alignment: builds in DC and needs community ties near job sites (the client\u0027s own Clark example, Q35); middle-school site visits fit Q21","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f24","n":"Whiting-Turner","form":"construction","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":3,"A":3,"R":2,"res":"draft","ec":"National contractor active in DC (draft, verify)","ea":"Business alignment: builds in DC and needs community ties near job sites (the client\u0027s own Clark example, Q35); middle-school site visits fit Q21","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f25","n":"DPR Construction","form":"construction","office":"Reston VA (approximate; verify)","lat":38.9586,"lon":"-77.3570","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":3,"A":3,"R":2,"res":"draft","ec":"National contractor with a Reston office (draft, verify)","ea":"Business alignment: builds in DC and needs community ties near job sites (the client\u0027s own Clark example, Q35); middle-school site visits fit Q21","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f26","n":"Guidehouse","form":"consulting","office":"McLean VA (approximate; verify)","lat":38.9339,"lon":"-77.1773","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":3,"A":1,"R":2,"res":"draft","ec":"Large consultancy headquartered in the DC area (draft, verify)","ea":"Generic CSR so far (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f27","n":"Capgemini","form":"consulting","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":2,"A":1,"R":2,"res":"draft","ec":"Global consultancy with a DC-area office (draft, verify)","ea":"Generic CSR so far (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f28","n":"EagleBank","form":"bank","office":"7830 Old Georgetown Rd, Bethesda MD","lat":38.987933,"lon":"-77.0997000","geo":"address","pipe":"upgrade","ch":["Cup"],"C":2,"A":2,"R":2,"res":"draft","ec":"Regional bank headquartered in Bethesda (draft, verify)","ea":"Community bank: local community focus (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f29","n":"CoStar Group","form":"corp","office":"1201 Wilson Blvd, Arlington VA","lat":38.8955936,"lon":"-77.0711653","geo":"address","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"draft","ec":"Public company headquartered in Arlington (draft, verify)","ea":"Local HQ community giving (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f30","n":"Appian","form":"corp","office":"McLean VA (approximate; verify)","lat":38.925,"lon":"-77.2150","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":2,"A":1,"R":2,"res":"draft","ec":"Public software company headquartered in McLean (draft, verify)","ea":"Generic CSR so far (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f31","n":"Brailsford \u0026 Dunlavey","form":"consulting","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":2,"A":3,"R":2,"res":"draft","ec":"Sports and education facility planners (draft, verify)","ea":"Sports facilities and education are its business (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f32","n":"ZS Associates","form":"consulting","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":2,"A":1,"R":2,"res":"draft","ec":"Global consultancy (draft, verify)","ea":"Generic CSR so far (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f33","n":"HighSpring","form":"consulting","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":1,"A":1,"R":2,"res":"draft","ec":"Regional consultancy (draft, verify)","ea":"Generic CSR so far (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f34","n":"Geospatial Consulting Group","form":"consulting","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":1,"A":1,"R":2,"res":"draft","ec":"Small firm (draft, verify)","ea":"UNKNOWN","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f35","n":"Solar Solution","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":1,"A":2,"R":2,"res":"draft","ec":"Small DC solar installer (draft, verify)","ea":"Local DC business (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f36","n":"AeroVironment","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"upgrade","ch":["Cup"],"C":3,"A":1,"R":2,"res":"draft","ec":"Public defense-technology company (formerly BlueHalo); gave beyond its Cup team in FY26 (draft, verify)","ea":"No stated youth focus found yet; possible STEM angle (verify)","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f37","n":"Hogan Lovells","form":"law","office":"Downtown DC office (approximate; verify)","lat":38.8985,"lon":"-77.0290","geo":"approx","pipe":"upgrade","ch":["Cup"],"C":3,"A":2,"R":2,"res":"draft","ec":"Large international law firm with a major DC office (draft, verify)","ea":"Underwrote Kimball ES in 2017 (public post): check whether that tie is still active","er":"SCORES Cup team in FY26 (Salesforce)","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: scores are estimates from Salesforce + category; a person verifies before any ask","sp":"","nosign":false},{"id":"f38","n":"Bank of America Charitable Fdn","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":2,"R":1,"res":"draft","ec":"Gives a peer $100K-999K (peer funder list / 990)","ea":"Neighborhood Builders grants","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f39","n":"Target","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Gives a peer $100K-999K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f40","n":"WC Smith","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":3,"R":1,"res":"draft","ec":"Gives a peer $100K-999K (peer funder list / 990)","ea":"Ward 8 developer near SCORES schools: business alignment","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f41","n":"Bloomberg LP","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Gives a peer $50K-99K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f42","n":"TD Bank","form":"bank","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Gives a peer $50K-99K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f43","n":"Morgan Stanley","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Gives a peer $25K-49K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f44","n":"PwC Charitable Fdn","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Gives a peer $25K-49K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f45","n":"Walker \u0026 Dunlop","form":"corp","office":"Office: UNKNOWN (research step)","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Gives a peer $25K-49K (peer funder list / 990)","ea":"UNKNOWN","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"UNKNOWN until research runs","budget":"UNKNOWN until research runs","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f46","n":"deLaski Family Foundation","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":3,"R":1,"res":"draft","ec":"Sitar $80-100K/yr (2022-23 990s) (peer funder list / 990)","ea":"Equity in education + arts","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f47","n":"Viragh Family Foundation","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":2,"R":1,"res":"draft","ec":"Sitar $100K (2022) (peer funder list / 990)","ea":"Education for low-income families","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f48","n":"Kaplan Charitable Fdn","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":3,"A":2,"R":1,"res":"draft","ec":"City Year DC $100K (2024) (peer funder list / 990)","ea":"DC youth orgs","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f49","n":"David S. Shrager Foundation","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"Sitar $60K (camp) (peer funder list / 990)","ea":"Camp angle fits DC SCORES summer camp","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f50","n":"Polinger Family Fdn","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"Sitar $50K/yr (peer funder list / 990)","ea":"No unsolicited proposals: needs an introduction","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f51","n":"Bernstein Fdn","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"Sitar $25-50K (peer funder list / 990)","ea":"Board-chosen grants","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f52","n":"William S. Abell Foundation","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"Sitar $25K; Kid Power $25-49K (peer funder list / 990)","ea":"Youth","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false},{"id":"f53","n":"Harman Family Foundation","form":"family","office":"Family foundation (no office): match by place focus","lat":null,"lon":null,"geo":"unknown","pipe":"peer","ch":[],"C":2,"A":3,"R":1,"res":"draft","ec":"Sitar $25K; Horton\u0027s Kids (peer funder list / 990)","ea":"Arts: fits the poetry side","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"","role":"Foundation trustee or executive director","budget":"Foundation grant, or family DAF (non-binding letter of intent)","pitch":"","flags":"Draft: from peer funder lists; a person verifies before any ask","sp":"","nosign":false}],"wards":[{"w":8,"r":[[[-76.9939,38.8777],[-76.9915,38.8776],[-76.9901,38.8714],[-76.978,38.8769],[-76.971,38.8733],[-76.9707,38.864],[-76.9618,38.8519],[-77.039,38.7916],[-77.0361,38.8148],[-77.0411,38.8234],[-77.0378,38.8302],[-77.0419,38.8337],[-77.0433,38.8315],[-77.0479,38.8413],[-77.0346,38.8401],[-77.0322,38.8507],[-77.0091,38.8634],[-77.0059,38.8686],[-77.0091,38.8699],[-77.0091,38.8765],[-77.0042,38.8765],[-77.0056,38.8805],[-76.9939,38.8777]]]},{"w":2,"r":[[[-77.0327,38.8826],[-77.0438,38.8742],[-77.047,38.8752],[-77.0468,38.8719],[-77.0503,38.8717],[-77.0518,38.8769],[-77.0589,38.8807],[-77.0641,38.8883],[-77.0678,38.8996],[-77.0783,38.9024],[-77.0776,38.9095],[-77.0817,38.9174],[-77.0582,38.9177],[-77.0502,38.9213],[-77.0462,38.9144],[-77.0412,38.917],[-77.032,38.917],[-77.032,38.9141],[-77.0181,38.9147],[-77.0148,38.9054],[-77.0219,38.9021],[-77.0189,38.9011],[-77.0199,38.8928],[-77.0152,38.8915],[-77.0152,38.8876],[-77.032,38.8876],[-77.0327,38.8826]]]},{"w":4,"r":[[[-77.041,38.996],[-76.9914,38.9573],[-77.009,38.9548],[-77.009,38.946],[-77.0173,38.9379],[-77.0252,38.9351],[-77.0364,38.9382],[-77.0483,38.9348],[-77.0481,38.9372],[-77.0519,38.9376],[-77.0499,38.9436],[-77.0441,38.9479],[-77.0471,38.9496],[-77.0406,38.9598],[-77.0514,38.9619],[-77.0562,38.961],[-77.0575,38.9567],[-77.0651,38.9585],[-77.0717,38.9719],[-77.041,38.996]]]},{"w":5,"r":[[[-76.9914,38.9573],[-76.9419,38.9185],[-76.9464,38.9151],[-76.9535,38.9144],[-76.9619,38.8971],[-76.9842,38.9002],[-77.0046,38.9089],[-77.0148,38.9054],[-77.0178,38.9138],[-77.0143,38.915],[-77.0149,38.9207],[-77.0122,38.9213],[-77.0121,38.9263],[-77.0182,38.9285],[-77.019,38.9374],[-77.0088,38.9462],[-77.009,38.9548],[-76.9914,38.9573]]]},{"w":6,"r":[[[-77.0091,38.8716],[-77.0059,38.8686],[-77.0091,38.8634],[-77.0322,38.8507],[-77.038,38.8632],[-77.0428,38.8634],[-77.0377,38.8652],[-77.0438,38.8742],[-77.0343,38.8805],[-77.032,38.8876],[-77.0152,38.8876],[-77.0152,38.8915],[-77.0199,38.8928],[-77.0189,38.9011],[-77.0219,38.9029],[-77.0046,38.9089],[-76.9836,38.9002],[-76.9837,38.8811],[-76.979,38.883],[-76.971,38.8814],[-76.9734,38.8784],[-76.9901,38.8714],[-76.9915,38.8776],[-77.0056,38.8805],[-77.0042,38.8765],[-77.0091,38.8765],[-77.0091,38.8716]]]},{"w":3,"r":[[[-77.0581,38.9568],[-77.0562,38.961],[-77.0518,38.9619],[-77.0406,38.9598],[-77.0471,38.9496],[-77.0441,38.9479],[-77.0499,38.9436],[-77.0521,38.9381],[-77.0479,38.9371],[-77.0509,38.9328],[-77.0469,38.9313],[-77.0448,38.9267],[-77.0497,38.9281],[-77.0487,38.9225],[-77.0582,38.9177],[-77.0817,38.9174],[-77.0776,38.9095],[-77.0783,38.9024],[-77.0876,38.9032],[-77.0978,38.9085],[-77.1198,38.9343],[-77.0717,38.9719],[-77.0651,38.9585],[-77.0581,38.9568]]]},{"w":1,"r":[[[-77.0352,38.9374],[-77.0253,38.9351],[-77.019,38.9374],[-77.0182,38.9285],[-77.0121,38.9263],[-77.0122,38.9213],[-77.0149,38.9207],[-77.0143,38.915],[-77.032,38.9141],[-77.032,38.917],[-77.0412,38.917],[-77.0462,38.9144],[-77.0502,38.9213],[-77.0485,38.923],[-77.0499,38.9277],[-77.046,38.926],[-77.0445,38.9283],[-77.0509,38.933],[-77.0352,38.9374]]]},{"w":7,"r":[[[-76.9419,38.9185],[-76.9091,38.8929],[-76.9626,38.852],[-76.9707,38.8641],[-76.971,38.8733],[-76.978,38.8769],[-76.971,38.8814],[-76.979,38.883],[-76.9837,38.8811],[-76.9836,38.9002],[-76.9619,38.8971],[-76.9535,38.9144],[-76.9464,38.9151],[-76.9419,38.9185]]]}],"agg":{"gifts":2099,"total":2758073,"orgs":135,"indiv":909,"indivTotal":622038,"indiv1k":141,"indiv5k":35,"oneGift":711,"second":292,"cupGifts":37,"cupTotal":238837,"cupNoSchool":29,"galaGifts":39,"galaTotal":306112,"matchGifts":20,"matchTotal":11564}};
+window.LOCAL_FIRMS = [
+{"id":"f54","n":"Kaiser Permanente Mid-Atlantic","form":"Nonprofit health plan","office":"Capitol Hill Medical Center, 700 2nd St NE, Washington DC","lat":38.8983,"lon":-77.0034,"geo":"address","pipe":"local","ch":[],"C":3,"A":3,"R":1,"res":"draft","ec":"DC youth grants of $75K (Grassroots Health) and $98K (TRIGGER University); BBAR $10K-24K (2024)","ea":"Funds a sports-based health program for Title I middle schoolers, very close to what DC SCORES does","er":"No known tie to DC SCORES","url":"https://kpproud-midatlantic.kaiserpermanente.org/kaiser-permanente-commits-more-than-1-2m-to-local-community-organizations-to-improve-community-health","focus":"Community health grants: physical activity, mental health, youth","role":"Community health / community benefit manager","budget":"Community health grants (annual cycle)","pitch":"Three years of after-school soccer for DC kids, the same kind of youth health program you already fund.","flags":"Draft: check the current grant cycle dates","sp":"","nosign":false},
+{"id":"f55","n":"Washington Commanders","form":"NFL team (private)","office":"RFK Campus stadium site, Washington DC (team HQ in Ashburn VA)","lat":38.8899,"lon":-76.9719,"geo":"approx","pipe":"local","ch":[],"C":3,"A":3,"R":1,"res":"draft","ec":"Stadium deal community benefits of at least $50M over 30 years, including $20M for a Ward 7 youth sports complex","ea":"Youth sports in Wards 5, 7 and 8, right next to where DC SCORES plays its middle school games","er":"No known tie to DC SCORES","url":"https://dccouncil.gov/council-approves-rfk-site-redevelopment-on-first-vote/","focus":"Community benefits package tied to the RFK stadium; Commanders Charitable Foundation","role":"Community relations / foundation lead","budget":"Community benefits package (youth sports)","pitch":"Fund soccer and poetry teams at the schools closest to the new RFK stadium.","flags":"Draft: city deal money, keep it non-partisan; check D.C. United and Spirit agreements for conflicts","sp":"","nosign":false},
+{"id":"f56","n":"Monumental Sports & Entertainment Fdn","form":"Corporate foundation","office":"Capital One Arena, 601 F St NW, Washington DC","lat":38.8981,"lon":-77.0209,"geo":"address","pipe":"local","ch":[],"C":3,"A":2,"R":1,"res":"draft","ec":"Foundation gave $3.1M in 2024-25 and the company $4.5M; WBJ top corporate philanthropist 2025","ea":"District of Play youth sports program, but focused on basketball, hockey and courts","er":"Funds Kid Power ($39.6K); no known tie to DC SCORES","url":"https://monumentalsports.com/2025/08/monumental-sports-entertainment-and-the-leonsis-family-celebrate-national-nonprofit-day-with-nearly-20-million-in-philanthropic-giving-during-the-2024-25-season/","focus":"District of Play youth sports; community grants","role":"Foundation / community relations director","budget":"District of Play (multi-year youth sports)","pitch":"Add soccer and poetry teams to District of Play at a DC school near Capital One Arena.","flags":"Draft: competing team brands with D.C. United and Spirit, check first","sp":"","nosign":false},
+{"id":"f57","n":"Fannie Mae","form":"C-corp (government-sponsored)","office":"1100 15th St NW, Washington DC","lat":38.9045,"lon":-77.0346,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #27, DC headquarters; grant size not found","ea":"Giving focuses on housing, not youth sports","er":"No known tie to DC SCORES","url":"","focus":"Community impact and employee volunteering in DC","role":"Community impact manager","budget":"Community impact / employee giving","pitch":"A three-year school partnership with built-in volunteer days for your DC staff.","flags":"Draft: check whether they fund outside housing","sp":"","nosign":false},
+{"id":"f58","n":"Freddie Mac","form":"C-corp (government-sponsored)","office":"8200 Jones Branch Dr, McLean VA","lat":38.9268,"lon":-77.221,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #36, DC area; grant size not found","ea":"Giving focuses on housing and financial stability","er":"No known tie to DC SCORES","url":"","focus":"Community giving and employee volunteering","role":"Community relations manager","budget":"Community giving","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: check giving focus","sp":"","nosign":false},
+{"id":"f59","n":"Danaher","form":"C-corp","office":"2200 Pennsylvania Ave NW, Washington DC","lat":38.902,"lon":-77.049,"geo":"address","pipe":"local","ch":[],"C":3,"A":2,"R":1,"res":"draft","ec":"Fortune 500 #153, DC headquarters; grant size not found","ea":"Education and science giving; DC SCORES is after-school education","er":"No known tie to DC SCORES","url":"","focus":"Education and community giving","role":"Corporate citizenship / community lead","budget":"Community giving","pitch":"Sponsor a DC school's soccer and poetry teams in your headquarters city.","flags":"Draft: check giving focus and sizes","sp":"","nosign":false},
+{"id":"f60","n":"Hilton","form":"C-corp","office":"7930 Jones Branch Dr, McLean VA","lat":38.9257,"lon":-77.2196,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #389, DC area; grant size not found","ea":"Youth opportunity giving through the Hilton Effect Foundation","er":"No known tie to DC SCORES","url":"","focus":"Hilton Effect Foundation: youth opportunity, communities","role":"Foundation / community lead","budget":"Hilton Effect Foundation","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: check grant process","sp":"","nosign":false},
+{"id":"f61","n":"Lockheed Martin","form":"C-corp","office":"6801 Rockledge Dr, Bethesda MD","lat":39.0257,"lon":-77.1375,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #57, DC area; grant size not found","ea":"Giving leans STEM and military families","er":"No known tie to DC SCORES; no gift match","url":"","focus":"STEM education, military families","role":"Community relations manager","budget":"Community relations","pitch":"A school partnership near your Bethesda headquarters.","flags":"Draft: weak fit unless framed around education","sp":"","nosign":false},
+{"id":"f62","n":"Leidos","form":"C-corp","office":"1750 Presidents St, Reston VA","lat":38.953,"lon":-77.348,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #266, DC area; grant size not found","ea":"Giving leans STEM and veterans","er":"No known tie to DC SCORES; gift match is higher education only","url":"","focus":"STEM, veterans, community","role":"Community relations manager","budget":"Community relations","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f63","n":"General Dynamics","form":"C-corp","office":"11011 Sunset Hills Rd, Reston VA","lat":38.9536,"lon":-77.342,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #104, DC area; grant size not found","ea":"Giving leans military and education","er":"No known tie to DC SCORES","url":"","focus":"Community giving","role":"Community relations manager","budget":"Community giving","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f64","n":"Northrop Grumman","form":"C-corp","office":"2980 Fairview Park Dr, Falls Church VA","lat":38.859,"lon":-77.214,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #109, DC area; grant size not found","ea":"Giving leans STEM","er":"No known tie to DC SCORES","url":"","focus":"STEM education","role":"Community relations manager","budget":"Community relations","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: weak fit unless framed around education","sp":"","nosign":false},
+{"id":"f65","n":"RTX","form":"C-corp","office":"1000 Wilson Blvd, Arlington VA","lat":38.895,"lon":-77.071,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #55, Arlington headquarters; grant size not found","ea":"Giving leans STEM","er":"No known tie to DC SCORES","url":"","focus":"STEM, veterans, community","role":"Social impact manager","budget":"Social impact","pitch":"A school partnership across the river from your Arlington headquarters.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f66","n":"Microsoft","form":"C-corp","office":"901 K St NW, Washington DC","lat":38.9025,"lon":-77.0245,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"DC-area giving named in WBJ research; grant size not found","ea":"Giving leans digital skills","er":"No known tie to DC SCORES","url":"","focus":"Digital skills, community","role":"Community affairs manager","budget":"Community affairs","pitch":"A school partnership near your K Street office, with volunteer days for your team.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f67","n":"EY","form":"Partnership","office":"1775 Tysons Blvd, Tysons VA","lat":38.9235,"lon":-77.224,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"Big Four firm; Deloitte, KPMG and PwC already give in DC; grant size not found","ea":"Youth and education volunteering","er":"No known tie to DC SCORES","url":"","focus":"EY Ripples volunteering, youth","role":"Corporate responsibility lead","budget":"Corporate responsibility","pitch":"Your peers Deloitte and KPMG already back DC kids. Field a SCORES Cup team and fund a team share.","flags":"Draft: partnership, so the 1% floor doesn't apply","sp":"","nosign":false},
+{"id":"f68","n":"Accenture","form":"Public company","office":"800 N Glebe Rd, Arlington VA","lat":38.881,"lon":-77.116,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"BBAR $10K-24K (2024); Year Up NCR employer partner","ea":"Funds DC youth programs east of the river","er":"No known tie to DC SCORES","url":"https://www.yearup.org/corporate-partners/partner-list","focus":"Youth workforce, community","role":"Corporate citizenship lead","budget":"Corporate citizenship","pitch":"You already fund youth programs in Ward 8. Add a DC SCORES team share there.","flags":"Draft","sp":"","nosign":false},
+{"id":"f69","n":"Truist","form":"C-corp","office":"Washington DC regional office","lat":38.9,"lon":-77.033,"geo":"approx","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"BBAR $10K-24K (2024)","ea":"Community giving in DC","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"Truist Foundation: community","role":"Community relations manager","budget":"Truist Foundation","pitch":"Fund a team share at a DC school near one of your branches.","flags":"Draft: office address not checked","sp":"","nosign":false},
+{"id":"f70","n":"U.S. Bank Fdn","form":"Corporate foundation","office":"Washington DC regional office","lat":38.9035,"lon":-77.04,"geo":"approx","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"BBAR $25K-49K (2024)","ea":"Community Possible grants in the markets it serves","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"Community Possible grants","role":"Community affairs manager","budget":"Community Possible grant","pitch":"A team share at a DC school, funded the same way you fund 11th Street Bridge Park.","flags":"Draft: office address not checked","sp":"","nosign":false},
+{"id":"f71","n":"Graham Holdings","form":"C-corp","office":"1300 N 17th St, Arlington VA","lat":38.894,"lon":-77.071,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"BBAR $10K-24K (2024)","ea":"Education company (Kaplan); funds DC community programs","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"Education, community","role":"Corporate giving lead","budget":"Corporate giving","pitch":"Fund a team share at a DC school, close to your education work.","flags":"Draft","sp":"","nosign":false},
+{"id":"f72","n":"Mintz","form":"Law firm (partnership)","office":"555 12th St NW, Washington DC","lat":38.8965,"lon":-77.0275,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"BBAR $10K-24K (2024)","ea":"Funds DC community programs","er":"Funds a DC SCORES peer; no known tie","url":"","focus":"Pro bono, community","role":"Community engagement lead","budget":"Community giving","pitch":"Join the law firm division of the SCORES Cup and fund a team share.","flags":"Draft","sp":"","nosign":false},
+{"id":"f73","n":"Goodwin","form":"Law firm (partnership)","office":"1900 N St NW, Washington DC","lat":38.907,"lon":-77.044,"geo":"address","pipe":"local","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Year Up NCR employer partner","ea":"Engages with DC youth through Year Up","er":"No known tie to DC SCORES","url":"https://www.yearup.org/corporate-partners/partner-list","focus":"Pro bono, community","role":"Pro bono / community lead","budget":"Community giving","pitch":"Join the law firm division of the SCORES Cup and fund a team share.","flags":"Draft","sp":"","nosign":false},
+{"id":"f74","n":"Sidley Austin","form":"Law firm (partnership)","office":"1501 K St NW, Washington DC","lat":38.9025,"lon":-77.0345,"geo":"address","pipe":"local","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Year Up NCR employer partner","ea":"Engages with DC youth through Year Up","er":"No known tie to DC SCORES","url":"https://www.yearup.org/corporate-partners/partner-list","focus":"Pro bono, community","role":"Pro bono / community lead","budget":"Community giving","pitch":"Join the law firm division of the SCORES Cup and fund a team share.","flags":"Draft","sp":"","nosign":false},
+{"id":"f75","n":"Navy Federal Credit Union","form":"Credit union","office":"820 Follin Ln SE, Vienna VA","lat":38.901,"lon":-77.258,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Year Up NCR employer partner; large DC-area employer","ea":"Giving leans financial literacy and military families","er":"No known tie to DC SCORES","url":"","focus":"Financial literacy, military families","role":"Community relations manager","budget":"Community giving","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f76","n":"Constellation","form":"C-corp","office":"1310 Point St, Baltimore MD (DC-area operations)","lat":39.281,"lon":-76.593,"geo":"address","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Year Up NCR employer partner","ea":"Community giving across the region","er":"No known tie to DC SCORES","url":"","focus":"Community, education","role":"Community relations manager","budget":"Community giving","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: Baltimore headquarters, check DC giving","sp":"","nosign":false},
+{"id":"f77","n":"Deltek","form":"Private company","office":"2291 Wood Oak Dr, Herndon VA","lat":38.958,"lon":-77.397,"geo":"address","pipe":"local","ch":[],"C":1,"A":1,"R":1,"res":"draft","ec":"Year Up NCR employer partner","ea":"Engages with DC-area youth through Year Up","er":"No known tie to DC SCORES","url":"https://www.yearup.org/corporate-partners/partner-list","focus":"Community","role":"Community lead","budget":"Community giving","pitch":"Field a SCORES Cup team and fund a poet-athlete.","flags":"Draft","sp":"","nosign":false},
+{"id":"f78","n":"JBG SMITH","form":"REIT","office":"4747 Bethesda Ave, Bethesda MD","lat":38.981,"lon":-77.096,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"DC-area developer named in WBJ research; grant size not found","ea":"Community giving near its DC and Arlington properties","er":"No known tie to DC SCORES","url":"","focus":"Community, housing","role":"Community impact lead","budget":"Community giving","pitch":"Fund a team share at a DC school near your properties.","flags":"Draft: check giving size","sp":"","nosign":false},
+{"id":"f79","n":"AES","form":"C-corp","office":"4300 Wilson Blvd, Arlington VA","lat":38.878,"lon":-77.11,"geo":"address","pipe":"local","ch":[],"C":2,"A":1,"R":1,"res":"draft","ec":"Fortune 500 #319, Arlington headquarters; grant size not found","ea":"Community giving","er":"No known tie to DC SCORES","url":"","focus":"Community, environment","role":"Community relations manager","budget":"Community giving","pitch":"A school partnership across the river from your Arlington headquarters.","flags":"Draft: weak fit","sp":"","nosign":false},
+{"id":"f80","n":"Washington Gas","form":"Utility (AltaGas subsidiary)","office":"1000 Maine Ave SW, Washington DC","lat":38.879,"lon":-77.024,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"DC utility with community giving; grant size not found","ea":"Serves every DC ward; Pepco, the other DC utility, already sponsors a DC SCORES school","er":"No known tie to DC SCORES","url":"","focus":"Community giving in its service area","role":"Community relations manager","budget":"Community giving","pitch":"Pepco already sponsors a DC SCORES school. Sponsor one in the wards you serve.","flags":"Draft: check giving size","sp":"","nosign":false},
+{"id":"f81","n":"Covington & Burling","form":"Law firm (partnership)","office":"850 Tenth St NW, Washington DC","lat":38.901,"lon":-77.025,"geo":"address","pipe":"local","ch":[],"C":2,"A":2,"R":1,"res":"draft","ec":"One of the largest DC law firms; grant size not found","ea":"Large DC pro bono and community program","er":"No known tie to DC SCORES","url":"","focus":"Pro bono, community","role":"Pro bono / community lead","budget":"Community giving","pitch":"Join the law firm division of the SCORES Cup and fund a team share.","flags":"Draft","sp":"","nosign":false},
+{"id":"f82","n":"AT&T","form":"C-corp","office":"DC office, Washington DC","lat":38.9045,"lon":-77.045,"geo":"approx","pipe":"local","ch":[],"C":3,"A":1,"R":1,"res":"draft","ec":"Urban Alliance major partner","ea":"Funds DC youth programs","er":"Funds a DC SCORES peer; no known tie","url":"https://urbanalliance.org/partners/","focus":"Youth, education, community","role":"Community relations manager","budget":"Community giving","pitch":"A three-year school partnership with volunteer days for your team.","flags":"Draft: office address not checked","sp":"","nosign":false}
+]
+;
+</script>
+<script>
+(function(){
+"use strict";
+var D=window.HUB_DATA;D.firms=D.firms.concat(window.LOCAL_FIRMS||[]);
+/* Plan numbers from the team deck (FYS SICP slides, slides 17-18) */
+var PLAN0={school:30000, team:15000, child:1400, years:3,
+  prospects:100, emails:50, intros:10, hiVal:5000, asks:[20,30,30], win:[0.15,0.10,0.10], cupFee:7500, cupShare:0.75, fam:40000, board:17000, boardOn:false};
+var PLAN=JSON.parse(JSON.stringify(PLAN0));
+var STEPS=[{id:"find",n:"Find prospects"},{id:"rank",n:"Rank by criteria"},{id:"act",n:"Next steps"},{id:"track",n:"Track results"}];
+
+function $(id){return document.getElementById(id)}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function money(n){n=Math.round(n||0);if(n>=1e6)return "$"+(n/1e6).toFixed(2)+"M";if(n>=1e4)return "$"+Math.round(n/1e3)+"K";if(n>=1e3)return "$"+(n/1e3).toFixed(1)+"K";return "$"+n}
+function hav(a,b,c,d){var R=3958.8,r=function(x){return x*Math.PI/180};var dl=r(c-a),dn=r(d-b);var h=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)*Math.sin(dn/2);return 2*R*Math.asin(Math.sqrt(h))}
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)/4294967296}
+function toast(m){var h=$("toastHost");h.innerHTML='<div class="toast" role="status">'+esc(m)+'</div>';clearTimeout(toast.t);toast.t=setTimeout(function(){h.innerHTML=""},2600)}
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}},del:function(k){try{localStorage.removeItem(k)}catch(e){}}};
+var reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}
+
+var FIRM={};D.firms.forEach(function(f){FIRM[f.id]=f});
+var OPEN=D.schools.filter(function(s){return s.st==="open"});
+var SPONSORED=D.schools.filter(function(s){return s.st==="sponsored"}).length;
+var CH={upgrade:{n:"Gives already, no school yet",t:"existing"},renew:{n:"Sponsors a school now",t:"existing"},peer:{n:"Funds a peer nonprofit",t:"new"},local:{n:"Gives publicly in DC",t:"new"}};
+
+/* ---------- state ---------- */
+var KEY="schoolmatch-walk-v2", S;
+function fresh(){return {step:"find",scanned:false,w:{C:1,A:1,R:1},sel:null,appr:{},text:{},own:{},lv:{},frame:0,ran:false}}
+function save(){store.set(KEY,JSON.stringify(S))}
+function load(){try{var o=JSON.parse(store.get(KEY)||"null");return o&&o.w&&o.appr?o:null}catch(e){return null}}
+
+/* ---------- logic ---------- */
+function playOf(f){
+  if(f.pipe==="renew")return "renew";
+  if(f.ch.indexOf("Cup")>=0||f.ch.indexOf("Gala")>=0)return f.A<=1?"align":"upgrade";
+  return "intro";
+}
+var PLAYN={upgrade:"Upgrade to a school",renew:"Renew + add a school",intro:"Ask for an introduction",align:"Build around their goals"};
+function offer(f){return f.C>=3?{n:"Whole school",amt:PLAN.school}:f.C===2?{n:"Team share",amt:PLAN.team}:{n:"Fund a poet-athlete",amt:PLAN.child}}
+function score(f){return S.w.C*f.C+S.w.A*f.A+S.w.R*f.R}
+function maxScore(){return 3*(S.w.C+S.w.A+S.w.R)||1}
+var RANK=[], MATCH={};
+function rank(){
+  RANK=D.firms.slice().sort(function(a,b){return score(b)-score(a)||b.R-a.R||b.C-a.C||a.n.localeCompare(b.n)});
+  /* v3: value x warmth decides the channel and the staff time.
+     high value, warm: tier 1 = the top PLAN.asks[0], asked in person this year; tier 4 = next year
+     high value, cold: tier 6 = foundations, through their grant cycle; tier 2 = the top PLAN.intros, intro through an advocate; tier 3 = find a way in (invites meanwhile)
+     lower value, warm: tier 5 = easy first step (Cup team, volunteer day, fund poet-athletes)
+     lower value, cold: tier 7 = email, newsletter, event invites */
+  var n1=0,n2=0;
+  RANK.forEach(function(f){var c=cellOf(f);
+    if(c==="hw"){f._tier=n1<PLAN.asks[0]?1:4;n1++}
+    else if(c==="lw")f._tier=5;
+    else if(c==="lc")f._tier=7;
+    else if(isFdn(f))f._tier=6;
+    else{f._tier=n2<PLAN.intros?2:3;n2++}});
+  var pers=RANK.filter(function(f){return f._tier===1});
+  /* nearest open school. Each school goes to one prospect while schools last; after that a prospect is offered
+     the nearest school even if someone else was offered it too (whoever signs first gets it) */
+  MATCH={};var used={};
+  RANK.filter(function(f){return f._tier===1}).concat(RANK.filter(function(f){return f._tier===2})).forEach(function(f){
+    if(f.lat==null){MATCH[f.id]={s:null};return}
+    var free=OPEN.filter(function(s){return !used[s.n]}),pool=free.length?free:OPEN;
+    var best=null,bd=1e9;pool.forEach(function(s){var d=hav(f.lat,f.lon,s.lat,s.lon);if(d<bd){bd=d;best=s}});
+    if(best){used[best.n]=1;MATCH[f.id]={s:best,d:bd,shared:!free.length}}
+  });
+  return pers;
+}
+function personal(){return RANK.filter(function(f){return f._tier===1})}
+function schoolText(f){var m=MATCH[f.id];if(!m||!m.s)return "a school in the ward they care about most";return m.s.n.replace(" School","")+(m.d<15?" ("+m.d.toFixed(1)+" mi from their office)":"")}
+function shortSchool(f){var m=MATCH[f.id];return m&&m.s?m.s.n.replace(" Elementary School"," ES").replace(" Middle School"," MS").replace(" Education Campus"," EC").replace(" School",""):"Funder picks ward"}
+function role(f){return f.role&&f.role.indexOf("UNKNOWN")<0?f.role.split(";")[0]:"community-impact lead"}
+/* stored pitches predate the $30K deal size and sometimes name a school the matcher may give to someone else */
+function why(f){var p=(f.pitch||"").replace(/\$35K/g,"$30K");return p&&!/(Elementary|Middle|ES\b|MS\b|Campus|school is|Ward \d)/.test(p)?p:(f.ea||p)}
+
+/* ---------- v3: value x warmth. Staff time goes where a yes is worth most ---------- */
+function isNew(f){return CH[f.pipe].t==="new"}
+/* chance of a yes once someone they trust asks, by Alignment 0-3. Our assumption, replaced by real results after the pilot */
+var FIT=[0.05,0.10,0.15,0.20];
+function ev(f){return FIT[f.A]*offer(f).amt*PLAN.years}
+function hiVal(f){return ev(f)>=PLAN.hiVal}
+function warm(f){return !isNew(f)}
+function cellOf(f){return (hiVal(f)?"h":"l")+(warm(f)?"w":"c")}
+var CELLN={hw:"High value, warm",hc:"High value, cold",lw:"Lower value, warm",lc:"Lower value, cold"};
+function isFdn(f){return /Foundation|Fdn/i.test(f.n)||/family|foundation/i.test(f.form||"")}
+/* treatment for each tier, with staff hours per prospect for the year. Tier 1 follows the engine spec (10 §4.1): ~12 cultivation hours each plus ~28 per close, about 16 on average */
+var TR={
+  1:{n:"Ask in person",c:"g",h:16},
+  4:{n:"Ask next year",c:"o",h:1},
+  5:{n:"Easy first step",c:"y",h:1},
+  2:{n:"Intro through an advocate",c:"b",h:3},
+  6:{n:"Grant cycle",c:"b",h:6},
+  3:{n:"Find a way in",c:"",h:0.5},
+  7:{n:"Email + newsletter",c:"",h:0.1}};
+/* industries, so a cold company can be matched to a peer that already supports DC SCORES */
+var IND={
+  law:{n:"law firm",ids:["f3","f5","f6","f8","f16","f17","f18","f19","f20","f37","f72","f73","f74","f81"]},
+  con:{n:"consulting or accounting firm",ids:["f1","f10","f14","f21","f26","f27","f31","f32","f33","f34","f44","f67","f68"]},
+  bld:{n:"builder or real estate firm",ids:["f22","f23","f24","f25","f29","f40","f45","f78"]},
+  fin:{n:"bank or finance company",ids:["f4","f11","f12","f28","f38","f42","f43","f57","f58","f69","f70","f75"]},
+  aer:{n:"aerospace or defense company",ids:["f13","f36","f61","f62","f63","f64","f65"]},
+  tec:{n:"tech company",ids:["f30","f41","f66","f77","f82"]},
+  hot:{n:"hotel company",ids:["f2","f60"]}};
+var INDOF={};Object.keys(IND).forEach(function(k){IND[k].ids.forEach(function(id){INDOF[id]=k})});
+/* the supporter in the same industry most likely to open a door: a school sponsor first, then the strongest relationship */
+function advocate(f){
+  var k=INDOF[f.id];if(!k||!isNew(f))return null;
+  return D.firms.filter(function(x){return INDOF[x.id]===k&&!isNew(x)}).sort(function(a,b){return (b.pipe==="renew")-(a.pipe==="renew")||b.R-a.R||b.C-a.C})[0]||null;
+}
+function advRole(a){return a.pipe==="renew"?"a current school sponsor":"a SCORES Cup team"}
+function dOpen(f){if(f.lat==null)return null;var m=1e9,s=null;OPEN.forEach(function(o){var d=hav(f.lat,f.lon,o.lat,o.lon);if(d<m){m=d;s=o}});return s?{s:s,d:m}:null}
+function hasMV(f){return /match|volunteer/i.test([f.ec,f.focus,f.budget,f.er].join(" "))}
+/* warmth signals: [text, 1 = DC SCORES already knows someone there] */
+function signals(f){
+  var a=[],c=f.ch||[];
+  if(f.pipe==="renew")a.push(["Sponsors a school now",1]);
+  if(c.indexOf("Cup")>=0)a.push(["Plays in the SCORES Cup",1]);
+  if(c.some(function(x){return x!=="Cup"&&x!=="School"}))a.push(["Gave another gift in FY26",1]);
+  var ad=advocate(f);if(ad)a.push(["Peer of "+ad.n+" ("+advRole(ad)+")",0]);
+  var n=dOpen(f);if(n&&n.d<=2)a.push(["Office "+n.d.toFixed(1)+" mi from a school that needs a partner",0]);
+  if(hasMV(f))a.push(["Employee matching or volunteer program",0]);
+  return a;
+}
+function sigLine(f){var s=signals(f);return s.length?s.map(function(x){return x[0]}).join(" · "):"No connection found yet"}
+var CELLDO={
+  hw:{b:"High touch",t:"An intro from a board member, sponsor or Cup captain, a visit to a game or poetry slam, then a personal proposal"},
+  hc:{b:"Build a way in",t:"A board member or a supporter in the same industry makes the intro, or apply through their foundation's grant cycle (the tool tracks the deadlines)"},
+  lw:{b:"Easy first step",t:"Keep the Cup team, add a volunteer day, or fund poet-athletes"},
+  lc:{b:"Email",t:"A short email, the newsletter and event invites. This is where email belongs"}};
+function grid(){
+  var C={hw:[],hc:[],lw:[],lc:[]};RANK.forEach(function(f){C[cellOf(f)].push(f)});
+  var hrs=function(l){return l.reduce(function(s,f){return s+TR[f._tier].h},0)},tot=hrs(RANK)||1;
+  var by=function(l){var m={};l.forEach(function(f){m[f._tier]=(m[f._tier]||0)+1});return Object.keys(m).sort(function(a,b){return [1,4,2,6,3,5,7].indexOf(+a)-[1,4,2,6,3,5,7].indexOf(+b)}).map(function(t){return m[t]+" "+TR[t].n.toLowerCase()}).join(" · ")};
+  var box=function(k){var l=C[k];return '<button type="button" data-cell="'+k+'" class="vc '+k+(S.cell===k?' on':'')+'" aria-pressed="'+(S.cell===k)+'"><span class="vt">'+CELLN[k]+'</span><b>'+CELLDO[k].b+'</b><span class="vch">'+esc(CELLDO[k].t)+'</span><span class="vn"><span class="num">'+l.length+'</span> prospects'+(k==="lc"&&queued()?' (+'+queued()+' still being researched)':'')+' &middot; <span class="num">'+Math.round(hrs(l))+'</span> staff hour'+(Math.round(hrs(l))===1?"":"s")+'</span><span class="vsub">'+esc(by(l))+'</span></button>'};
+  return '<div class="vw card"><div class="row2" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">Value &times; warmth: who gets staff time</h3><span class="small muted">About <span class="num">'+Math.round(tot)+'</span> staff hours this year (about <span class="num">'+Math.round(tot/48)+'</span> a week across the team). <span class="num">'+Math.round(100*hrs(C.hw)/tot)+'%</span> go to the high-value, warm box. Click a box to filter the list.</span></div>'+
+    '<div class="vgrid"><span class="ax y">Value &uarr; &middot; chance &times; gift &times; 3 yrs</span>'+box("hc")+'<span class="bridge" aria-hidden="true"><span class="arr">&larr;</span>Advocates<span class="arr">&rarr;</span></span>'+box("hw")+box("lc")+box("lw")+'<span class="ax x">Cold &larr; Warmth &rarr; Warm &middot; does DC SCORES already know someone there?</span></div>'+
+    '<p class="small" style="margin:0"><b>Advocates are the bridge.</b> Each board member gets the 2&ndash;4 companies they can open a door to and is asked for one intro a quarter. Sponsors and Cup captains do the same for peers in their industry. An intro moves a company into the warm column. Email never carries a '+money(PLAN.school)+' ask.</p>'+doors()+'</div>';
+}
+/* referral value: which supporters can open the most doors to high-value, cold companies */
+function doors(){
+  var m={};RANK.forEach(function(f){if(cellOf(f)!=="hc"||isFdn(f))return;var a=advocate(f);if(a){m[a.id]=m[a.id]||{a:a,n:0};m[a.id].n++}});
+  var top=Object.keys(m).map(function(k){return m[k]}).sort(function(x,y){return y.n-x.n}).slice(0,4);
+  return top.length?'<p class="small muted" style="margin:0"><b>Best door-openers (referral value):</b> '+top.map(function(x){return esc(x.a.n)+" &rarr; "+x.n+" "+(x.n>1?IND[INDOF[x.a.id]].n.replace(/company$/,"companies").replace(/firm$/,"firms"):IND[INDOF[x.a.id]].n)}).join(" &middot; ")+'</p>':"";
+}
+/* ---------- v2: who carries each ask, and what the tool prepares for them ---------- */
+function introList(){return RANK.filter(function(f){return f._tier===2})}
+/* materials the tool prepares. Nothing is sent by the tool: a person makes every call and sends every note. */
+var MAT={
+  points:{n:"Talking points",s:"For the call or the visit"},
+  note:{n:"Short note",s:"To someone who knows us"},
+  one:{n:"One-pager",s:"To forward inside the company"}};
+function matOf(f){return (S.lv&&MAT[S.lv[f.id]]&&S.lv[f.id])||"points"}
+
+var ABOUT="DC SCORES has run after-school programs in DC public schools since 1994. Our poet-athletes play on a soccer team, write and perform their own poetry, and lead a service-learning project in their neighborhood.";
+var ABOUT_SHORT="As you've seen, our poet-athletes play soccer, write and perform poetry, and lead service projects in their own DC neighborhoods.";
+function known(v){return v&&!/UNKNOWN/.test(v)?v:""}
+function near(f){var m=MATCH[f.id];return m&&m.s&&m.d<8?m.s.n.replace(" School","")+" is "+m.d.toFixed(1)+" miles from your office":""}
+function gaveVia(f){var c=f.ch||[];return c.indexOf("Cup")>=0&&c.indexOf("Gala")>=0?"fielding a SCORES Cup team and supporting our gala":c.indexOf("Cup")>=0?"fielding a SCORES Cup team":c.indexOf("Gala")>=0?"supporting our gala":"your support this year"}
+function isCup(f){return (f.ch||[]).indexOf("Cup")>=0}
+function pitchOK(f){var p=why(f);return p&&p===(f.pitch||"").replace(/\$35K/g,"$30K")?p:""}
+function fitLine(f){
+  var p=playOf(f),nr=near(f);
+  if(p==="renew")return "Your partnership with "+(f.sp||"your school")+" is the model we want to grow, and "+(MATCH[f.id]&&MATCH[f.id].s?MATCH[f.id].s.n.replace(" School",""):"another school near you")+" still needs a partner.";
+  if(p==="upgrade")return "Your people already know what DC SCORES does on the field, and a school of your own is the natural next step."+(nr?" "+nr+".":"");
+  if(p==="align")return "We'd like to build something around what matters most to "+f.n+": employee engagement, local visibility, or ties with the neighborhoods where you work.";
+  var pc=pitchOK(f);if(pc)return "We think "+f.n+" is a natural fit: "+(/^(Three|A|An|Fund|Add|Sponsor|Your|You)\b/.test(pc)?pc.charAt(0).toLowerCase()+pc.slice(1):pc)+(nr&&!/\bmiles?\b/.test(pc)?" "+nr+".":"");
+  var base=f.pipe==="local"?f.n+" already gives back here in DC":f.n+" already funds youth programs in DC much like ours";
+  return base+(nr?", and "+nr+".":".");
+}
+function moneyLine(f){
+  var o=offer(f),k=kidsFor(o.amt),m0=MATCH[f.id],sch=m0&&m0.s?m0.s.n.replace(" School",""):"a school in the ward you care about most";
+  if(o.amt>=PLAN.school)return money(o.amt)+" a year covers about "+k+" poet-athletes at "+sch+": coach stipends, buses to games (DC has no school buses), uniforms and equipment, and the poetry and service-learning work.";
+  if(o.amt>=PLAN.team)return money(o.amt)+" a year covers about "+k+" poet-athletes, roughly one team, at "+sch+": coaching, buses to games, uniforms and the poetry work.";
+  return money(o.amt)+" covers one poet-athlete for a full year: coaching, transportation, equipment, and the poetry and service-learning work.";
+}
+function kidsFor(amt){return Math.max(1,Math.floor(amt/(PLAN.child||1400)))}
+function perks(){return "Your team would get game days to coach, an invitation to the end-of-season poetry slam, and a season report each fall and spring."}
+
+/* the next rung up the ladder for this company */
+function rung(f){
+  if(isNew(f))return {n:"Come to a game",amt:0,t:"No money asked this year. Come watch a game at "+shortSchool(f)+", or come to the SCORES Cup as our guest."};
+  var o=offer(f);return {n:o.n,amt:o.amt,t:o.n+" at "+schoolText(f)+", "+money(o.amt)+" a year for 3 years ("+money(o.amt*PLAN.years)+" in all)."};
+}
+/* who carries the ask */
+function messenger(f){
+  var p=playOf(f);
+  if(p==="renew")return "Executive Director and Development Director, with the contact they already work with";
+  if(isNew(f)){if(f._tier===6)return "The Development Director, through the foundation's normal grant application";var ad=advocate(f);return ad?"An advocate: "+ad.n+" is "+advRole(ad)+" and also a "+IND[INDOF[f.id]].n+". The Development Director asks their contact if they know anyone at "+f.n+". A board member is the backup":"A board member who knows someone at "+f.n+" (the tool checks the board list in Salesforce). If nobody does: an invite only, no ask"}
+  if(isCup(f))return "Their SCORES Cup team captain, who brings in their "+role(f)+". The Development Director makes the first call to the captain";
+  return "The Development Director, with the person they already know there";
+}
+function moment(f){
+  var p=playOf(f),sch=shortSchool(f);
+  if(p==="renew")return "Renewal meeting before the spring season, with their season report";
+  if(isNew(f))return "A spring game at "+sch+", the end-of-season poetry slam, or the SCORES Cup (June 12) as guests";
+  return "A spring game at "+sch+" (their giving lead comes to watch), then Signing Day at the SCORES Cup, June 12";
+}
+
+/* short note: always to someone who already knows DC SCORES */
+function noteFor(f){
+  var p=playOf(f),o=offer(f),sch=schoolText(f),sig="\n\n[Development Director]\nDC SCORES";
+  var ad=isNew(f)?advocate(f):null;
+  if(ad)return "Subject: Do you know anyone at "+f.n+"?\n\nHi [First name],\n\nThank you for "+(ad.pipe==="renew"?"sponsoring "+(ad.sp||"your DC SCORES school"):"fielding "+ad.n+"'s SCORES Cup team")+". Our research list flagged "+f.n+", another "+IND[INDOF[f.id]].n+" here in DC. Why they fit: "+((known(f.ea)?known(f.ea).replace(/\.?\s*$/,"."):"")||f.n+" already funds youth programs in DC much like ours.")+"\n\nWe don't want to cold-email them. If you know anyone there, would you send a two-line intro, or bring them along to a spring game at "+shortSchool(f)+"? No ask this year. We just want them to see the kids play.\n\nA one-page summary is attached in case it helps."+sig;
+  if(isNew(f))return "Subject: Do you know anyone at "+f.n+"?\n\nHi [Board member's first name],\n\nOur research list flagged "+f.n+". Why they fit: "+((known(f.ea)?known(f.ea).replace(/\.?\s*$/,"."):"")||(f.pipe==="local"?f.n+" already gives back here in DC.":f.n+" already funds youth programs in DC much like ours."))+(MATCH[f.id]&&MATCH[f.id].s&&MATCH[f.id].d<15?" Their office is "+MATCH[f.id].d.toFixed(1)+" miles from "+shortSchool(f)+", which still needs a partner.":"")+"\n\nWe don't want to cold-email them. If you know anyone there, could you send them a two-line intro? We'd only invite them to see a game at "+shortSchool(f)+" or come to the SCORES Cup as our guests. No ask this year.\n\nA one-page summary is attached in case it helps."+sig;
+  if(p==="renew")return "Subject: Three more years at "+(f.sp||"your school")+"\n\nHi [First name],\n\nThank you for sponsoring "+(f.sp||"your DC SCORES school")+". Your season report is attached.\n\n"+fitLine(f)+" Could we meet before the spring season starts to talk about renewing early, and about a second school?"+sig;
+  if(isCup(f))return "Subject: Your Cup team and "+shortSchool(f)+"\n\nHi [Captain's first name],\n\nThank you for captaining "+f.n+"'s SCORES Cup team. "+ABOUT_SHORT+"\n\n"+shortSchool(f)+" is "+(MATCH[f.id]&&MATCH[f.id].s&&MATCH[f.id].d<15?MATCH[f.id].d.toFixed(1)+" miles from your office and ":"")+"still needs a partner. Would you be open to bringing whoever runs giving at "+f.n+" to one of our spring games there? I'd love for them to see it before we talk about anything else.\n\nI've attached a one-page summary you can forward."+sig;
+  return "Subject: "+f.n+" and "+shortSchool(f)+"\n\nHi [First name],\n\nThank you for "+gaveVia(f)+". "+ABOUT_SHORT+"\n\n"+fitLine(f)+" Would you like to come see a spring game at "+shortSchool(f)+"? I'd love to show you what a school partnership looks like before we talk about it."+sig;
+}
+/* one-pager the contact can forward inside the company */
+function onePager(f){
+  var o=offer(f),r=rung(f),sch=MATCH[f.id]&&MATCH[f.id].s?MATCH[f.id].s.n.replace(" School",""):"a DC SCORES school";
+  var L=[f.n+" + "+sch+": a DC SCORES partnership","",
+    "WHO WE ARE","  "+ABOUT,"",
+    "THE SCHOOL","  "+sch+(MATCH[f.id]&&MATCH[f.id].s?", Ward "+MATCH[f.id].s.w:"")+(MATCH[f.id]&&MATCH[f.id].d<15?". "+MATCH[f.id].d.toFixed(1)+" miles from your office.":".")+" It still needs a partner.","",
+    "WHAT A PARTNERSHIP PAYS FOR","  "+moneyLine(f),"",
+    "WHAT YOUR PEOPLE GET","  Game days to coach, the end-of-season poetry slam, a SCORES Cup team, and a season report each fall and spring.",""];
+  if(isNew(f))L.push("FIRST STEP","  Come to a spring game at "+sch+" or to the SCORES Cup (June 12) as our guests. No ask this year.");
+  else L.push("THE OPTIONS","  Team share (half a school): "+money(PLAN.team)+" a year. Whole school: "+money(PLAN.school)+" a year. Both for 3 years.","","WHAT WE'RE ASKING "+f.n.toUpperCase(),"  "+r.t);
+  L.push("","Contact: [Development Director], DC SCORES");
+  return L.join("\n");
+}
+/* talking points for the call or visit: [heading, [points], warn?] */
+function points(f){
+  var p=playOf(f),o=offer(f),nw=isNew(f),out=[];
+  out.push(["Who DC SCORES is",nw?["After-school programs in DC public schools since 1994","Soccer, poetry and service-learning on one team: the kids are called poet-athletes"]:["Keep it to one line, they know us","Reminder: soccer, poetry and service-learning"]]);
+  var fit=[fitLine(f)];if(known(f.ea))fit.push("From our research: "+f.ea);if(known(f.focus)&&nw)fit.push("Their giving focus: "+f.focus);
+  out.push(["Why it fits them",fit]);
+  if(nw){var ad=advocate(f);if(ad)out.push(["Who opens the door",[ad.n+" is "+advRole(ad)+" and also a "+IND[INDOF[f.id]].n+": ask their contact for the intro","Peers recruiting peers: log who made the intro so the review can compare introduced and cold prospects"]])}
+  if(nw)out.push(["The ask this year",["None. Only an invite to a game, the poetry slam or the Cup","If they come and like it: a Cup team next year ("+money(PLAN.cupFee)+"), then a school"]]);
+  else out.push(["The ask: one step up",[rung(f).t,"First call: ask the captain or contact to bring their giving lead to a game. Don't ask for "+money(o.amt)+" on the first call","What they get: game days to coach, the poetry slam, a season report each fall and spring"]]);
+  var w=[];if(f.flags)f.flags.split("|").forEach(function(x){if(x.trim())w.push(x.trim())});if(f.res==="draft")w.push("Draft research: a person checks these facts before anyone reaches out");
+  if(w.length)out.push(["Check before you reach out",w,1]);
+  return out;
+}
+function todo(f){
+  var p=playOf(f),sch=shortSchool(f);
+  if(isNew(f)){var ad=advocate(f);if(ad)return [["Ask the contact at "+ad.n+" ("+advRole(ad)+") if they know anyone at "+f.n+" (note drafted)","Development Director"],["If they do: a two-line intro, or they bring them to a spring game at "+sch,"Advocate"],["If they don't: check the board list, then invite only. No ask this year","Tool"],["If they come: talk about a Cup team next year. Log who made the intro","Development Director"]]}
+  if(isNew(f))return [["Check Salesforce for a board member, partner or Cup player who works at "+f.n,"Tool"],["If someone knows them: they send a two-line intro (note drafted)","Board member"],["If nobody does: invite them to a spring game at "+sch+" or the SCORES Cup. No ask this year","Development Director"],["If they come: talk about a Cup team next year","Development Director"]];
+  if(p==="renew")return [["Send their season report","Program team"],["Renewal meeting before spring season","Executive Director"],["Propose "+sch+" as a second school","Development Director"],["Sign at the SCORES Cup, June 12","Development Director"]];
+  var a=[];
+  if(isCup(f))a.push(["Call the Cup team captain at "+f.n+": would they bring their giving lead to a game?","Development Director"]);
+  else a.push(["Call the person you already know at "+f.n,"Development Director"]);
+  a.push(["Spring game at "+sch+": captain and giving lead come to watch","Program team"]);
+  a.push(["Captain forwards the one-pager inside "+f.n,isCup(f)?"Cup captain":"Development Director"]);
+  a.push(["20-minute meeting with their giving lead, then a written proposal","Development Director"]);
+  a.push(["Sign at Signing Day, SCORES Cup June 12","Development Director"]);
+  return a;
+}
+/* the ladder every company climbs */
+function ladder(){
+  var nCup=D.firms.filter(function(f){return f.pipe==="upgrade"&&isCup(f)}).length;
+  var R=[["1","Come to a game","Free","Or a volunteer day. New companies start here, invited by someone who knows them",D.firms.filter(isNew).length+qNew()+" new companies"],
+    ["2","Play in the SCORES Cup",money(PLAN.cupFee)+" a team","Cup teams already know DC SCORES",nCup+" Cup teams with no school yet"],
+    ["3","Team Share / Partner Circle",money(PLAN.team)+" a year","Half a school. Smaller first step for a Cup team","Some sponsors already give at this level"],
+    ["4","Own a school",money(PLAN.school)+" a year, 3 yrs","The goal: one company, one school","9 paused schools need one"],
+    ["5","Advocate","Opens doors","Hosts an event, introduces a peer, brings employees to a game","Current sponsors and "+nCup+" Cup teams can open doors"]];
+  return '<div class="ladder card"><div class="row2" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">How companies move up</h3><span class="small muted">We never ask a stranger for '+money(PLAN.school)+'. Each company is asked for the next step by someone who knows them. At the top, a sponsor brings in the next one.</span></div>'+
+    '<ol class="rungs">'+R.map(function(r){return '<li><span class="rn">'+r[0]+'</span><b>'+esc(r[1])+'</b><span class="amt num">'+esc(r[2])+'</span><span class="small muted">'+esc(r[3])+'</span><span class="cnt">'+esc(r[4])+'</span></li>'}).join('<li class="ar" aria-hidden="true">&rarr;</li>')+'</ol></div>';
+}
+
+/* ---------- render ---------- */
+var cur;
+function renderSteps(){
+  var idx=STEPS.findIndex(function(s){return s.id===S.step});
+  $("steps").innerHTML=STEPS.map(function(s,i){return '<li><button type="button" data-step="'+s.id+'" class="'+(s.id===S.step?"on":i<idx?"done":"")+'"'+(s.id===S.step?' aria-current="step"':'')+'><span class="n">'+(i+1)+'</span>'+esc(s.n)+'</button></li>'}).join("")+'<li><button type="button" data-step="drivers" class="drv'+(S.step==="drivers"?" on":"")+'"><span class="n">&#9881;</span>Drivers</button></li>';
+}
+function foot(prevTxt,nextTxt,nextDisabled){
+  var i=STEPS.findIndex(function(s){return s.id===S.step});
+  return '<div class="foot"><span>'+(i>0?'<button class="btn" type="button" data-go="'+STEPS[i-1].id+'">&larr; '+esc(prevTxt||STEPS[i-1].n)+'</button>':'')+'</span><span>'+(i<STEPS.length-1?'<button class="btn go" type="button" data-go="'+STEPS[i+1].id+'"'+(nextDisabled?' disabled':'')+'>'+esc(nextTxt||"Next: "+STEPS[i+1].n)+' &rarr;</button>':'')+'</span></div>';
+}
+function render(){
+  rank();renderSteps();
+  var v=$("view");
+  v.innerHTML=S.step==="drivers"?vDrivers():S.step==="find"?vFind():S.step==="rank"?vRank():S.step==="act"?vAct():vTrack();
+  save();
+}
+function go(id){S.step=id;render();try{window.scrollTo(0,0)}catch(e){}}
+
+/* step 1 */
+var SCAN=[
+  {k:"upgrade",n:"DC SCORES donor records (Salesforce)",d:function(){var a=D.agg;return a.gifts.toLocaleString()+" FY26 gifts from "+a.orgs+" organizations and "+a.indiv+" individuals. Looking for Cup teams and gala sponsors with no school of their own."}},
+  {k:"renew",n:"Current school sponsors",d:function(){return SPONSORED+" schools have a sponsor on record. Looking for sponsors who could renew early or add a second school."}},
+  {k:"peer",n:"Funders of similar DC nonprofits",d:function(){return "Annual reports and foundation tax filings (990s) of peer youth and arts nonprofits. Looking for funders who don't give to DC SCORES yet."}},
+  {k:"local",n:"DC companies that give publicly",d:function(){return "Corporate giving pages and public lists of top DC corporate givers, checked against DC SCORES' records. Looking for companies near an open school that have never given. New names are marked as drafts until a person checks them."}},
+  {k:"queue",n:"Other organizations that gave in FY26",d:function(){var a=D.agg;return "Smaller company and foundation donors in the same "+a.orgs+"-organization export. Added to the list and queued for research before anyone is asked."}},
+  {k:"schools",n:"Schools that still need a partner",d:function(){return D.schools.length+" DC SCORES schools checked against sponsor records so nobody is offered a school that is already taken."}}
+];
+function queued(){return Math.max(0,PLAN.prospects-D.firms.length)}
+/* the not-yet-researched prospects are split so new and give-more come out about even */
+function qNew(){var rn=D.firms.filter(function(f){return CH[f.pipe].t==="new"}).length;return Math.min(queued(),Math.max(0,Math.round(PLAN.prospects/2)-rn))}
+function qOld(){return queued()-qNew()}
+function cnt(k){return k==="schools"?OPEN.length:k==="queue"?qOld():k==="local"?D.firms.filter(function(f){return f.pipe==="local"}).length+qNew():D.firms.filter(function(f){return f.pipe===k}).length}
+function vFind(){
+  var nNew=cnt("peer")+cnt("local"),nEx=cnt("upgrade")+cnt("renew")+qOld();
+  var rows=SCAN.map(function(c,i){var done=S.scanned;return '<div class="ch'+(done?' ok':'')+'" id="ch'+i+'"><span class="ic">'+(done?'&#10003;':i+1)+'</span><span><b>'+esc(c.n)+'</b><span class="d">'+esc(c.d())+'</span></span><span class="res num" id="r'+i+'">'+(done?cnt(c.k)+(c.k==="schools"?" open":" found"):"&ndash;")+'</span></div>'}).join("");
+  var right;
+  if(!S.scanned){
+    right='<div class="card start"><h3>Start the weekly prospecting run</h3><p class="muted" style="margin:0">The tool checks each source on the left, removes anyone already sponsoring a school, and sorts what\'s left into new donors and current donors who could give more.</p><button class="btn go big" id="btnScan" type="button">Find prospective donors for DC SCORES</button><span class="note">Runs every Monday at 7 am in the real system. Takes about 3 seconds here.</span></div>';
+  } else right=foundBlock(nNew,nEx);
+  return '<div class="head"><div><div class="eyebrow">Step 1 of 4 &middot; Prospecting</div><h2>Who could fund a DC SCORES school?</h2><p class="lede">The development team has four people and no time to search. This step does the searching for them.</p></div>'+who("The tool, by itself","0 staff minutes. Runs Monday 7 am",1)+'</div>'+
+    '<div class="problem"><span><b>9</b> schools paused after funding cuts</span><span><b>4</b> people on the development team</span><span><b>3</b> new school partners a year is the goal</span></div>'+
+    '<div class="launch"><div class="chan">'+rows+'</div><div id="right">'+right+'</div></div>'+foot(null,null,!S.scanned);
+}
+function who(by,t,auto){return '<div class="who'+(auto?" auto":"")+'"><span class="l">Who does this step</span><b>'+by+'</b><span class="t">'+t+'</span></div>'}
+function foundBlock(nNew,nEx){
+  var grp=function(t){return D.firms.filter(function(f){return CH[f.pipe].t===t})};
+  var chips=function(list){return '<div class="chips">'+list.map(function(f,i){return '<span class="chip" style="animation-delay:'+(i*25)+'ms">'+esc(f.n)+'</span>'}).join("")+'</div>'};
+  var qn=qOld(),qw=qNew();
+  return '<div class="found"><div class="sum"><p>After checking <strong>'+(SCAN.length-1)+' sources</strong>, I found <strong>'+(nNew+nEx)+' possible donors</strong>: '+nEx+' current donors who could give more, and '+nNew+' new donors DC SCORES has never asked.</p><p style="margin:8px 0 0;font-size:16px">Next, the tool sorts everyone by value and warmth. Big asks go through someone who already knows the company. Email is only for smaller prospects with no connection yet.</p></div>'+
+    '<div class="split"><div class="card"><h3>Give more <span class="num">'+nEx+'</span></h3><p class="small muted" style="margin:0 0 8px">Already give through the SCORES Cup, the gala, a school or a smaller gift, and could sponsor a whole school.</p>'+chips(grp("existing"))+(qn?'<div class="chips" style="margin-top:6px"><span class="chip" style="border-style:dashed">+ '+qn+' smaller FY26 donors, research in progress</span></div>':'')+'</div>'+
+    '<div class="card"><h3>New donors <span class="num">'+nNew+'</span></h3><p class="small muted" style="margin:0 0 8px">Fund similar DC nonprofits or give publicly in DC. No gift to DC SCORES yet. They start with an invite, not an ask.</p>'+chips(grp("new"))+(qw?'<div class="chips" style="margin-top:6px"><span class="chip" style="border-style:dashed">+ '+qw+' DC companies that give publicly, research in progress</span></div>':'')+'</div></div>'+
+    '<p class="note" style="margin:0">'+OPEN.length+' schools are still open for a partner. Prospects marked as drafts get checked by a person before any ask.</p><p class="note" style="margin:0">Demo note: the results here are loaded from our research (DC SCORES\x27 FY26 gift records, public filings of peer nonprofits and public company giving pages). The real tool would refresh these sources every week.</p></div>';
+}
+function runScan(){
+  var btn=$("btnScan");if(btn)btn.disabled=true;
+  var i=0,delay=reduce?150:750;
+  (function next(){
+    if(i>0){var p=$("ch"+(i-1));p.className="ch ok";p.querySelector(".ic").innerHTML="&#10003;";var c=SCAN[i-1];$("r"+(i-1)).textContent=cnt(c.k)+(c.k==="schools"?" open":" found")}
+    if(i<SCAN.length){var e=$("ch"+i);e.className="ch run";e.querySelector(".ic").textContent="";$("r"+i).textContent="checking";i++;setTimeout(next,delay)}
+    else{S.scanned=true;render()}
+  })();
+}
+
+/* step 2 */
+function dots(n){var s='<span class="dots" aria-label="'+n+' of 3">';for(var i=0;i<3;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return s+'</span>'}
+function tierTag(t){var x=TR[t];return '<span class="tag '+x.c+'">'+x.n+'</span>'}
+function vRank(){
+  var crit=[["C","Capacity","Can they give $30K a year? Size and presence in the DC area."],["A","Alignment","Fit with youth soccer, poetry, DC schools, or their business goals."],["R","Relationship","Does DC SCORES already know someone there?"]];
+  var cards=crit.map(function(c){return '<div class="card"><span class="k">'+c[0]+' &middot; scored 0&ndash;3</span><h3 style="margin:0">'+c[1]+'</h3><span class="small muted">'+c[2]+'</span><label for="w'+c[0]+'">Weight <input type="range" min="0" max="3" step="1" id="w'+c[0]+'" data-w="'+c[0]+'" value="'+S.w[c[0]]+'"><span class="num">&times;'+S.w[c[0]]+'</span></label></div>'}).join("");
+  var pers=personal(),last=pers[pers.length-1];
+  var shown=S.cell?RANK.filter(function(f){return cellOf(f)===S.cell}):S.all?RANK:RANK.slice(0,25);
+  var rows=shown.map(function(f,i){
+    var o=offer(f),sel=S.sel===f.id;
+    var r='<tr class="row" data-sel="'+f.id+'" tabindex="0"><td class="num">'+(i+1)+'</td><td><b>'+esc(f.n)+'</b><br><span class="small muted">'+esc(CH[f.pipe].n)+'</span></td><td>'+dots(f.C)+'</td><td>'+dots(f.A)+'</td><td>'+dots(f.R)+'</td><td class="r tot num">'+score(f)+'<span class="small muted">/'+maxScore()+'</span></td><td class="r num">'+money(ev(f))+'</td><td>'+tierTag(f._tier)+'<br><span class="small muted">'+CELLN[cellOf(f)]+'</span></td><td>'+(f._tier===6?'Grant request<br><span class="small muted num">'+money(o.amt)+'/yr</span>':isNew(f)?'No ask this year<br><span class="small muted">Invite first</span>':esc(o.n)+'<br><span class="small muted num">'+money(o.amt)+'/yr</span>')+'</td><td class="small">'+(f._tier<=2?esc(shortSchool(f)):'<span class="muted">&ndash;</span>')+'</td></tr>';
+    if(sel)r+='<tr><td colspan="10" style="background:var(--panel2)"><p class="small" style="margin:0 0 8px"><b>Warmth signals:</b> '+esc(sigLine(f))+'</p><div class="detail"><div><b>Capacity '+f.C+'</b>'+esc(f.ec||"Unknown")+'</div><div><b>Alignment '+f.A+'</b>'+esc(f.ea||"Unknown")+'</div><div><b>Relationship '+f.R+'</b>'+esc(f.er||"Unknown")+'</div></div>'+(f.flags?'<p class="small" style="margin:8px 0 0"><span class="tag o">Check first</span> '+esc(f.flags)+'</p>':'')+'</td></tr>';
+    return r}).join("");
+  return '<div class="head"><div><div class="eyebrow">Step 2 of 4 &middot; Evaluation</div><h2>Rank every prospect on DC SCORES\' own criteria</h2><p class="lede">These are the three 1&ndash;3 scores DC SCORES already uses. The tool also puts each prospect in one box of a value &times; warmth grid, and the box decides the channel and the staff time. The top '+pers.length+' high-value, warm prospects are asked in person this year. Email is only for the lower-value, cold box. Click a box or a row to see why.</p></div>'+who("Tool scores, director checks","About 10 minutes to look over the list")+'</div>'+
+    '<div class="crit">'+cards+'</div>'+grid()+
+    '<div class="row2" style="justify-content:space-between"><span class="small muted">Score = Capacity + Alignment + Relationship, each times its weight. Ties go to the stronger relationship, because a warm contact is the best sign someone will say yes.</span><button class="btn sm" type="button" id="btnAllRows">'+(S.all?"Show only the top 25":"Show all "+RANK.length+" prospects")+'</button></div>'+
+    '<div class="tablewrap"><table><thead><tr><th>#</th><th>Prospect</th><th>Capacity</th><th>Alignment</th><th>Relationship</th><th class="r">Score</th><th class="r">Value</th><th>Next step</th><th>Offer</th><th>Matched school</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<p class="note" style="margin:0">Value = the chance of a yes once someone they trust asks (5&ndash;20% by Alignment, our assumption) &times; the offer &times; 3 years. High value = '+money(PLAN.hiVal)+' or more. Warm = DC SCORES already knows someone there. Value leaves out the relationship on purpose, because warmth is the other axis. Current donors are asked for one step up. New companies are not asked for money in year 1, except foundations through their normal grant cycle. The offer depends on capacity: a whole school at 3, a team share at 2, funding poet-athletes at 1. Each prospect is matched to the nearest open school to their office. Once all '+OPEN.length+' open schools are offered, a school can go to more than one prospect, and the first to sign gets it.</p>'+foot();
+}
+
+/* step 3 */
+function actList(){return personal().concat(introList())}
+function vAct(){
+  var pers=personal(),intro=introList(),all=actList();if(!S.sel||!all.some(function(f){return f.id===S.sel}))S.sel=pers[0].id;
+  var f=FIRM[S.sel],o=offer(f),p=playOf(f),nw=isNew(f);
+  var nA=all.filter(function(x){return S.appr[x.id]==="a"}).length;
+  var qb=function(list,start){return list.map(function(x,i){var st=S.appr[x.id];return '<button type="button" data-pick="'+x.id+'" class="'+(x.id===S.sel?"on":"")+'"><span class="rk">'+(start+i+1)+'</span><span>'+esc(x.n)+'</span><span class="st '+(st||"")+'" title="'+(st==="a"?"In this week's plan":st==="s"?"Not this week":"Waiting")+'"></span></button>'}).join("")};
+  var q='<div class="qh">Ask in person &middot; high value, warm ('+pers.length+')</div>'+qb(pers,0)+'<div class="qh">Intro through an advocate &middot; high value, cold ('+intro.length+')</div>'+qb(intro,pers.length);
+  var mt=matOf(f);
+  var tabs='<div class="lvl" role="radiogroup" aria-label="What the tool prepares">'+["points","note","one"].map(function(k){return '<button type="button" role="radio" aria-checked="'+(k===mt)+'" data-lvl="'+k+'" class="'+(k===mt?"on":"")+'"><b>'+MAT[k].n+'</b><span>'+(k==="note"?(nw?(advocate(f)?"To the advocate who may know them":"To the board member who knows them"):p==="renew"?"To the contact they already have":isCup(f)?"To their Cup team captain":"To the person who knows us"):MAT[k].s)+'</span></button>'}).join("")+'</div>';
+  var body;
+  if(mt==="points"){
+    body='<div class="tp">'+points(f).map(function(g){return '<div'+(g[2]?' class="warn"':'')+'><h4>'+esc(g[0])+'</h4><ul>'+g[1].map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul></div>'}).join("")+'</div>';
+  }else if(mt==="note"){
+    body='<div><label for="email" style="font:700 18px var(--f-display);display:block;margin-bottom:6px">Short note (a person edits it and sends it from their own inbox)</label><textarea id="email" spellcheck="true">'+esc(S.text[f.id]||noteFor(f))+'</textarea></div>';
+  }else{
+    body='<div><label for="email" style="font:700 18px var(--f-display);display:block;margin-bottom:6px">One-pager (attached to the note, easy to forward)</label><textarea id="email" readonly style="font:14.5px/1.5 var(--f-mono)">'+esc(onePager(f))+'</textarea></div>';
+  }
+  var st=S.appr[f.id];
+  var tagT=nw?'<span class="tag b">New company</span>':'<span class="tag o">Current donor</span>';
+  var askT=nw?'<span class="tag">No ask this year</span>':'<span class="tag">'+esc(o.n)+' &middot; '+money(o.amt)+'/yr &times; 3 yrs</span>';
+  var plan='<div class="plan card"><div class="row2" style="justify-content:space-between"><div><div class="nm">'+esc(f.n)+'</div><div class="row2" style="margin-top:6px"><span class="tag g">'+esc(nw?TR[f._tier].n:PLAYN[p])+'</span>'+tagT+askT+'<span class="tag">'+CELLN[cellOf(f)]+' &middot; value '+money(ev(f))+'</span>'+'<span class="tag b">'+esc(shortSchool(f))+'</span></div></div>'+(st==="a"?'<span class="tag g">In this week\'s plan</span>':st==="s"?'<span class="tag r">Not this week</span>':'<span class="tag y">Waiting for you</span>')+'</div>'+
+    '<p class="small muted" style="margin:0"><b>Why this box:</b> '+esc(sigLine(f))+'</p><div class="q3"><div><span class="l">Who carries the ask</span><p>'+esc(messenger(f))+'</p></div><div><span class="l">Where and when</span><p>'+esc(moment(f))+'</p></div><div><span class="l">'+(nw?"This year":"The ask, one step up")+'</span><p>'+esc(rung(f).t)+'</p></div></div>'+
+    '<div><h3 style="font-size:18px;margin-bottom:8px">What DC SCORES does next</h3><ol class="todo">'+todo(f).map(function(t){return '<li><span>'+esc(t[0])+'</span><span class="tag who '+(t[1]==="Tool"?"b":"y")+'">'+esc(t[1])+'</span></li>'}).join("")+'</ol></div>'+
+    '<div><h3 style="font-size:18px;margin-bottom:8px">What the tool prepares</h3>'+tabs+'</div>'+
+    '<p class="note" style="margin:0">The tool does the homework: research, the matched school, timing and these materials. People do the asking. Nothing is sent automatically.</p>'+body+
+    '<div class="row2"><button class="btn go" type="button" id="btnApprove">Add to this week\'s plan</button><button class="btn no" type="button" id="btnSkip">Not this week</button><button class="btn" type="button" id="btnClaude"'+(sampleFn&&mt==="note"?'':' hidden')+'>Rewrite with Claude</button><span class="note" id="liveNote"></span></div></div>';
+  return '<div class="head"><div><div class="eyebrow">Step 3 of 4 &middot; Recommended actions</div><h2>Who asks, where, and for what</h2><p class="lede">A ' + money(PLAN.school) + '-a-year sponsorship comes from a conversation, not a cold email. For each high-value company the tool says who already knows them, the best moment to ask, and the next step up, then prepares what that person needs. Email is used only for the lower-value, cold box.</p></div><div class="row2">'+who("Development Director","About 30 minutes each Monday to pick the week\'s calls. Captains and board members carry many of the asks")+'<span class="num">'+nA+' of '+all.length+' planned</span><button class="btn ok sm" type="button" id="btnAll">Plan all '+all.length+'</button></div></div>'+
+    ladder()+
+    '<div class="act"><div class="queue" aria-label="This year\'s asks">'+q+'</div>'+plan+'</div>'+foot(null,null,false);
+}
+
+/* step 4 */
+var STG=["Asked in person","Met at a game or visit","Proposal","Signed"];
+var FR=[{m:"Jan",t:"Calls to Cup captains, sponsors and advocates"},{m:"Mar",t:"Giving leads come to spring games. Advocates bring guests"},{m:"Apr",t:"Meetings and site visits"},{m:"May",t:"Proposals out"},{m:"Jun",t:"Signing Day at the SCORES Cup (June 12) and June review"},{m:"Dec",t:"December review: re-score. Fall games and poetry slams fill next year's warm list"}];
+function outcomes(){
+  var pers=personal().filter(function(f){return S.appr[f.id]!=="s"});
+  /* funnel (assumptions, year 1): about 3 in 4 warm asks lead to a meeting, half get a proposal, about 1 in 5 meetings signs (= the plan's 15%) */
+  var n=pers.length,signed=Math.min(n,Math.round(n*PLAN.win[0])),met=Math.max(signed,Math.round(n*0.75)),prop=Math.min(met,Math.max(signed,Math.round(n*0.5)));
+  var ord=pers.slice().sort(function(a,b){return (score(b)+2*hash(b.id+"y1"))-(score(a)+2*hash(a.id+"y1"))});
+  var out={};ord.forEach(function(f,i){out[f.id]=i<signed?3:i<prop?2:i<met?1:0});
+  return {list:ord,fin:out,n:n,signed:signed,met:met,prop:prop};
+}
+function stageAt(fin,frame){return Math.min(fin,Math.max(0,frame-1))}
+function vTrack(){
+  var O=outcomes(),fr=S.frame;
+  var months='<div class="months">'+FR.map(function(x,i){return '<span class="'+(i<fr?"on":"")+(x.t.indexOf("review")>=0?" rev":"")+'" title="'+esc(x.t)+'">'+x.m+'</span>'}).join("")+'</div>';
+  var cols=STG.map(function(s,si){
+    var list=fr===0?[]:O.list.filter(function(f){return stageAt(O.fin[f.id],fr)===si});
+    var MAXC=9,more=list.length-MAXC;
+    return '<div class="col'+(si===3?" win":"")+'"><h4>'+(si===0&&fr>=3?"Not this year":s)+'<span class="num">'+list.length+'</span></h4>'+list.slice(0,MAXC).map(function(f){return '<div class="card2"><b>'+esc(f.n)+'</b><div class="s">'+(si===3?esc(shortSchool(f)):si===2&&fr>=6?"Not this year. Re-ask in FY28":esc(offer(f).n))+'</div></div>'}).join("")+(more>0?'<div class="small muted" style="padding:2px 8px">+ '+more+' more</div>':'')+'</div>'}).join("");
+  var done=fr>=FR.length;
+  var signedList=O.list.filter(function(f){return O.fin[f.id]===3});
+  var nowTxt=fr===0?"Press the button to play the first year month by month.":FR[fr-1].m+": "+FR[fr-1].t;
+  /* referral chains: introduced vs cold (simulated, assumptions) */
+  var nI=introList().length,cI=Math.round(nI*0.6);
+  var nC=RANK.filter(function(f){return f._tier===3||f._tier===7}).length+queued(),cC=Math.round(nC*0.08);
+  var strip='<div class="newstrip"><span><b>Introduced vs. cold</b> <span class="small muted">(simulated)</span></span><span>Introduced by an advocate: <b class="num">'+cI+'</b> of '+nI+' came to a game ('+Math.round(100*cI/(nI||1))+'%)</span><span>Email and invites only: <b class="num">'+cC+'</b> of '+nC+' came to an event ('+Math.round(100*cC/(nC||1))+'%)</span><span><b>$0</b> counted from new companies. The ones who came join next year\'s warm list</span></div>';
+  var kp=done?('<div class="funnel">'+[["Prospects found",PLAN.prospects,"step 1"],["Asked in person",O.n,"the warm tier"],["Met at a game or visit",O.met,"about 3 in 4"],["Proposals",O.prop,"written offers"],["Schools signed",O.signed,"about 1 in 5 meetings &middot; "+money(O.signed*PLAN.school)+"/yr"]].map(function(x,i,a){return '<div class="fs'+(i===a.length-1?' last':'')+'"><span class="v num">'+x[1]+'</span><span class="l">'+x[0]+'</span><span class="t">'+x[2]+'</span></div>'}).join('<span class="fa" aria-hidden="true">&rarr;</span>')+'</div>'+strip+'<p class="note" style="margin:0">Staff time: about 1.5 hours a week with the tool, plus the in-person asks (about 16 hours each over the year, including closing). Board members, sponsors and Cup captains carry the intros.</p>'):'';
+  var learn=done?learnBlock(O,signedList):'';
+  return '<div class="head"><div><div class="eyebrow">Step 4 of 4 &middot; Tracking results</div><h2>Follow every ask until it signs or stops</h2><p class="lede">Each intro, game visit, meeting and signed school is logged, with who opened the door. The June and December reviews use these numbers to re-score prospects and move staff hours to what worked. We track meetings and visits, not email replies.</p></div>'+who("Staff log each step, tool keeps score","About 15 minutes on Friday")+
+    '<div class="row2"><button class="btn go" type="button" id="btnPlay"'+(done?' hidden':'')+'>'+(fr===0?"Play year 1 (2027)":done?"Done":"Next: "+FR[fr].m)+'</button><button class="btn" type="button" id="btnAllYear"'+(done?' hidden':'')+'>Skip to December</button><button class="btn sm" type="button" id="btnReplay"'+(fr===0?' hidden':'')+'>Replay</button></div></div>'+
+    '<div class="card" style="display:flex;flex-direction:column;gap:12px">'+months+'<div style="font:700 20px var(--f-display)" aria-live="polite">'+esc(nowTxt)+'</div><div class="kan">'+cols+'</div><p class="note" style="margin:0">Simulated year. All '+PLAN.asks[0]+' asks go to the high-value, warm box. About 3 in 4 agree to meet at a game or a site visit, and about 1 in 5 meetings becomes a sponsor, which is the plan\'s '+Math.round(PLAN.win[0]*100)+'% year-1 rate. These rates are our assumptions. Real results replace them once the pilot starts.</p></div>'+kp+learn+foot();
+}
+function kpi(l,v,t){return '<div class="kpi"><div class="l">'+esc(l)+'</div><div class="v num">'+esc(String(v))+'</div><div class="t">'+esc(t)+'</div></div>'}
+function learnBlock(O,signedList){
+  var by={};O.list.forEach(function(f){var k=CH[f.pipe].n;by[k]=by[k]||{a:0,w:0};by[k].a++;if(O.fin[f.id]===3)by[k].w++});
+  var learnLis=Object.keys(by).map(function(k){var x=by[k];return '<li><b>'+esc(k)+'</b>: '+x.w+' signed of '+x.a+' asked ('+Math.round(100*x.w/x.a)+'%)</li>'}).join("");
+  var years=[0,1,2].map(function(i){return {y:"FY"+(27+i),asks:PLAN.asks[i],win:PLAN.win[i],sch:Math.round(PLAN.asks[i]*PLAN.win[i])}});
+  var cum=0,yrRows=years.map(function(y){cum+=y.sch;return '<tr><td>'+y.y+'</td><td class="r num">'+y.asks+'</td><td class="r num">'+Math.round(y.win*100)+'%</td><td class="r num">'+y.sch+'</td><td class="r num">'+cum+'</td><td class="r num">'+money(cum*PLAN.school)+'</td></tr>'}).join("");
+  var M=model(PLAN), schools=M.schoolsRev, total=M.total, mx=total;
+  var bar=function(l,v,lt){return '<div class="bar"><span>'+esc(l)+'</span><span class="tr"><i class="'+(lt?"lt":"")+'" style="width:'+(100*v/mx).toFixed(1)+'%"></i></span><span class="num">'+money(v)+'</span></div>'};
+  return '<div class="grid2"><div class="card"><h3>What the December review learns</h3><ul class="learn">'+learnLis+
+    '<li>Signed this year: '+signedList.map(function(f){return esc(f.n)+' &rarr; '+esc(shortSchool(f))}).join("; ")+'</li>'+
+    '<li>Next year: the tool re-scores everyone, giving more weight to the signals that led to meetings and signed schools. Staff hours move to the channels that produced meetings, new companies that came to a game join next year\'s warm list, and asks grow to '+PLAN.asks[1]+'.</li></ul></div>'+
+    '<div class="card"><h3>Where this leads by FY29</h3><div class="tablewrap" style="border:0"><table><thead><tr><th>Year</th><th class="r">In-person asks</th><th class="r">Win rate</th><th class="r">New schools</th><th class="r">Schools total</th><th class="r">Per year</th></tr></thead><tbody>'+yrRows+'</tbody></table></div>'+
+    '<div class="bars" style="margin-top:12px">'+bar("School partnerships",schools)+bar("Cup 2.0",M.cup,1)+bar("Family foundations",PLAN.fam,1)+(PLAN.boardOn?bar("Board give-or-get",PLAN.board,1):'')+'</div>'+
+    '<p style="margin:12px 0 0;font:700 22px var(--f-display)">'+money(total)+' a year by FY29 &middot; about '+Math.round(total/PLAN.child/10)*10+' poet-athletes funded</p>'+
+    '<p class="note" style="margin:4px 0 0">'+cum+' schools &times; '+money(PLAN.school)+'. Cup 2.0 = '+M.cupTeams+' extra Cup teams &times; '+money(PLAN.cupFee)+'. Board give-or-get ('+money(PLAN.board)+') '+(PLAN.boardOn?'counted':'not counted')+'. '+money(PLAN.child)+' per poet-athlete. <a href="#" data-step="drivers">See all drivers</a></p></div></div>';
+}
+
+/* ---------- drivers (assumptions) ---------- */
+function model(P){
+  var cum=0,yrs=[0,1,2].map(function(i){var n=Math.round(P.asks[i]*P.win[i]);cum+=n;return {y:"FY"+(27+i),asks:P.asks[i],win:P.win[i],sch:n,cum:cum,rev:cum*P.school}});
+  var cupTeams=Math.round(cum*P.cupShare), cup=cupTeams*P.cupFee, sr=cum*P.school;
+  var total=sr+cup+P.fam+(P.boardOn?P.board:0);
+  return {yrs:yrs,cum:cum,schoolsRev:sr,cupTeams:cupTeams,cup:cup,total:total,kids:total/P.child};
+}
+function pctTxt(p){var v=Math.round(p*1000)/10;return v+"%"}
+var SCEN={plan:{n:"Team plan",win:[0.15,0.10,0.10]},low:{n:"Cautious (half the win rate)",win:[0.075,0.05,0.05]},high:{n:"Strong (+5 points)",win:[0.20,0.15,0.15]}};
+function vDrivers(){
+  var P=PLAN,M=model(P),B=model(PLAN0);
+  var inp=function(id,val,step,unit,min,max){return '<span class="drvin"><input type="number" id="d-'+id+'" data-drv="'+id+'" value="'+val+'" step="'+step+'" min="'+(min==null?0:min)+'"'+(max!=null?' max="'+max+'"':'')+'>'+(unit?'<span class="u">'+unit+'</span>':'')+'</span>'};
+  var row=function(label,ctrl,src,changed){return '<tr'+(changed?' class="chg"':'')+'><td><b>'+label+'</b></td><td>'+ctrl+'</td><td class="small muted">'+src+'</td></tr>'};
+  var ch=function(a,b){return JSON.stringify(a)!==JSON.stringify(b)};
+  var rev='<table><thead><tr><th>Driver</th><th>Value</th><th>Where it comes from</th></tr></thead><tbody>'+
+    row("School partnership, per year",inp("school",P.school,1000,"$"),"Team deck slide 5: whole school $30,000-$40,000 a year. The model uses the low end. $270K / 9 schools = $30K.",P.school!==PLAN0.school)+
+    row("Team share, per year",inp("team",P.team,1000,"$"),"Half a school (Partner Circle). Offered when capacity is 2 of 3.",P.team!==PLAN0.team)+
+    row("Cost per poet-athlete",inp("child",P.child,50,"$"),"DC SCORES Executive Director open letter, Aug 2026 ($117 a month).",P.child!==PLAN0.child)+
+    row("Partnership length",'<span class="num">'+P.years+' years</span>',"Our offer: 3-year school sponsorships, so all 9 schools are still active in FY29.")+
+    row("Prospects found (year 1)",inp("prospects",P.prospects,10,""),"Step 1: "+D.firms.length+" researched in this demo plus "+queued()+" smaller FY26 donors still being researched.",P.prospects!==PLAN0.prospects)+
+    row("Cold companies sent for an intro",inp("intros",P.intros,1,""),"The highest-ranked high-value, cold companies (foundations go through their grant cycle instead). The tool suggests an advocate in the same industry, then the board list. $0 counted from new companies.",P.intros!==PLAN0.intros)+row("High-value cut-off",inp("hiVal",P.hiVal,500,"$"),"Value = chance of a yes once someone they trust asks (5-20% by Alignment, our assumption) x the offer x 3 years. At or above this, a prospect gets real staff time. Below it: an easy first step if warm, email if cold.",P.hiVal!==PLAN0.hiVal)+
+    row("In-person asks per year",[0,1,2].map(function(i){return '<span class="drvlab">FY'+(27+i)+'</span>'+inp("a"+i,P.asks[i],5,"")}).join(" "),"The team deck calls these personal asks. Each one is a conversation with a current donor (Cup team, gala sponsor or school sponsor), carried by a Cup captain, board member or the director. Never a cold email.",ch(P.asks,PLAN0.asks))+
+    row("Win rate (asks that sign)",[0,1,2].map(function(i){return '<span class="drvlab">FY'+(27+i)+'</span>'+inp("w"+i,Math.round(P.win[i]*1000)/10,0.5,"%",0,100)}).join(" "),"About 3 in 4 warm asks lead to a meeting and about 1 in 5 meetings becomes a sponsor: 0.75 x 0.2 = 15% in year 1. From FY28 the asks reach less warm prospects, so about half meet: 0.5 x 0.2 = 10%. 20 asks x 15% = 3 schools, then 30 x 10% = 3 a year. Our assumptions.",ch(P.win,PLAN0.win))+
+    row("Partners who field a Cup team",inp("cupShare",Math.round(P.cupShare*100),5,"%",0,100),"Team deck slide 18: Signing Day happens at the Cup and each partner is invited to play.",P.cupShare!==PLAN0.cupShare)+
+    row("SCORES Cup entry fee",inp("cupFee",P.cupFee,500,"$"),"DC SCORES SCORES Cup 2026 event page ($7,500 per team).",P.cupFee!==PLAN0.cupFee)+
+    row("Family foundations (FY29)",inp("fam",P.fam,5000,"$"),"Team revenue model, slide 17. Peer funders like the deLaski and Viragh family foundations.",P.fam!==PLAN0.fam)+
+    row("Board give-or-get",inp("board",P.board,1000,"$")+' <label class="small"><input type="checkbox" id="d-boardOn" data-drvb="boardOn"'+(P.boardOn?' checked':'')+'> count it</label>',"Slide 17, shown as “if adopted”. Left out of the $363K.",P.boardOn!==PLAN0.boardOn||P.board!==PLAN0.board)+
+    '</tbody></table>';
+  var yrRows=M.yrs.map(function(y){return '<tr><td>'+y.y+'</td><td class="r num">'+y.asks+'</td><td class="r num">'+pctTxt(y.win)+'</td><td class="r num">'+y.sch+'</td><td class="r num">'+y.cum+'</td><td class="r num">'+money(y.rev)+'</td></tr>'}).join("");
+  var diff=M.total-B.total;
+  var scen='<div class="row2">'+Object.keys(SCEN).map(function(k){var on=!ch(P.win,SCEN[k].win);return '<button class="btn sm'+(on?' go':'')+'" type="button" data-scen="'+k+'">'+esc(SCEN[k].n)+'</button>'}).join("")+'<button class="btn sm" type="button" id="btnDrvReset">Reset all to team plan</button></div>';
+  var other=[["Staff time","About 1.5 hours a week with the tool: 30 min Monday review, 15 min Friday logging, 10 min per new brief, 1 hour a month. Plus about one in-person ask every two weeks, which the tool makes faster to prepare."],
+    ["Tool cost","2 AI seats &times; $20 a month = $480 a year (lower at nonprofit rates). No custom model to train."],
+    ["Scoring","DC SCORES’ own 1&ndash;3 rubric for Capacity, Alignment and Relationship (client Q&amp;A, Q35). Equal weights by default. Ties go to the stronger relationship."],
+    ["Who gets asked","Value x warmth. The top "+P.asks[0]+" high-value, warm prospects are asked in person. The top "+P.intros+" high-value, cold companies get an intro through an advocate; foundations go through their grant cycle. Lower-value, warm prospects get an easy first step. Email, the newsletter and event invites are only for the lower-value, cold box. Nothing is sent automatically."],
+    ["School match","Nearest school that still needs a partner, measured from the prospect’s DC-area office. One school per prospect."],
+    ["Prospect list",PLAN.prospects+" prospects, about half new donors and half current donors who could give more. The "+D.firms.length+" researched so far are 30 Cup teams and gala sponsors with no school, 2 current sponsors, 21 funders of peer nonprofits and 29 DC companies that give publicly. The other "+queued()+" are smaller FY26 donors still being researched. "+OPEN.length+" open schools, "+SPONSORED+" already sponsored."],
+    ["Data used","DC SCORES FY26 gift export (2,099 gifts), peer nonprofits’ annual reports and 990s, public company giving pages. No student data, no bought lists."],
+    ["Year-1 simulation","Outcomes in step 4 are simulated at the year-1 win rate. Higher-scoring prospects are more likely to sign."]];
+  return '<div class="head"><div><div class="eyebrow">Assumptions</div><h2>Drivers behind the numbers</h2><p class="lede">Every number in the walkthrough comes from this page. Change one and step 4 and the FY29 total update. Changed values are highlighted.</p></div>'+
+    '<div class="who"><span class="l">FY29 total with these drivers</span><b class="num" style="font-size:30px">'+money(M.total)+'</b><span class="t" style="color:'+(diff<0?'var(--bad)':'var(--pitch)')+'">'+(diff===0?'Matches the team plan ($363K)':(diff>0?'+':'&minus;')+money(Math.abs(diff))+' vs. team plan')+'</span></div></div>'+
+    '<div class="card"><h3>Try a scenario</h3>'+scen+'</div>'+
+    '<div class="grid2"><div class="tablewrap drvt">'+rev+'</div>'+
+    '<div class="card"><h3>What these drivers produce</h3><div class="tablewrap" style="border:0"><table><thead><tr><th>Year</th><th class="r">In-person asks</th><th class="r">Win rate</th><th class="r">New schools</th><th class="r">Total</th><th class="r">Schools $/yr</th></tr></thead><tbody>'+yrRows+'</tbody></table></div>'+
+    '<dl class="calc"><dt>School partnerships</dt><dd class="num">'+M.cum+' &times; '+money(P.school)+' = '+money(M.schoolsRev)+'</dd><dt>Cup 2.0</dt><dd class="num">'+M.cum+' &times; '+Math.round(P.cupShare*100)+'% = '+M.cupTeams+' teams &times; '+money(P.cupFee)+' = '+money(M.cup)+'</dd><dt>Family foundations</dt><dd class="num">'+money(P.fam)+'</dd>'+(P.boardOn?'<dt>Board give-or-get</dt><dd class="num">'+money(P.board)+'</dd>':'')+'<dt><b>FY29 total</b></dt><dd class="num"><b>'+money(M.total)+'</b></dd><dt>Poet-athletes funded</dt><dd class="num">'+money(M.total)+' &divide; '+money(P.child)+' = about '+Math.round(M.kids)+'</dd></dl></div></div>'+
+    '<div class="card"><h3>Other assumptions</h3><dl class="other">'+other.map(function(o){return '<dt>'+o[0]+'</dt><dd>'+o[1]+'</dd>'}).join("")+'</dl></div>'+
+    '<div class="foot"><span><button class="btn" type="button" data-go="find">&larr; Back to the walkthrough</button></span><span><button class="btn go" type="button" data-go="track">See it in step 4 &rarr;</button></span></div>';
+}
+
+/* ---------- live Claude (optional) ---------- */
+var sampleFn=null;
+function initLive(){try{if(window.claude&&window.claude.use)window.claude.use("sample").then(function(s){sampleFn=s||null;if(sampleFn&&S.step==="act")render()}).catch(function(){})}catch(e){}}
+function rewrite(){
+  if(!sampleFn)return;var f=FIRM[S.sel],ta=$("email"),btn=$("btnClaude"),before=ta.value;btn.disabled=true;$("liveNote").textContent="Claude is rewriting...";
+  var prompt="Rewrite this short note from DC SCORES (a DC nonprofit running soccer, poetry and service-learning teams in DC public schools) so it is warmer and more specific to "+f.n+". Under 150 words, plain text, no markdown, no exclamation marks. Keep the first line as 'Subject: ...'. Keep every fact, amount and school name exactly as given and do not invent new facts or names. It goes to someone who already knows DC SCORES (a board member, a Cup team captain or a current contact), not to a stranger, and it asks for a game visit or an introduction, not money. "+(isNew(f)?"It asks a board member for an introduction to "+f.n+".":"Thank them first and keep the introduction to one line.")+" What we know about them: "+(f.er||"")+". Their giving focus: "+(f.focus||f.ea||"")+".\n\nEmail:\n"+before;
+  sampleFn(prompt,{modelTier:"quick",cache:false,onText:function(u){ta.value=u.text}}).then(function(r){ta.value=r.text;S.text[f.id]=r.text;save();$("liveNote").textContent="Rewritten live by Claude. Review before approving."})
+  .catch(function(e){ta.value=before;$("liveNote").textContent=e&&e.code==="rate_limited"?"Too many requests right now. Try again in a minute.":"Claude didn't finish. The draft above still works.";if(e&&e.code==="not_granted"){sampleFn=null;btn.hidden=true}})
+  .then(function(){btn.disabled=false});
+}
+
+/* ---------- events ---------- */
+var timer=null;
+function play(all){
+  clearInterval(timer);
+  if(all){S.frame=FR.length;render();return}
+  S.frame=Math.min(FR.length,S.frame+1);render();
+}
+document.addEventListener("click",function(e){
+  var t=e.target.closest("[data-step],[data-go],[data-sel],[data-pick],[data-scen],button");if(!t)return;
+  if(t.tagName==="A")e.preventDefault();
+  if(t.dataset.cell){S.cell=S.cell===t.dataset.cell?null:t.dataset.cell;render();return}if(t.dataset.scen){PLAN.win=SCEN[t.dataset.scen].win.slice();render();return}
+  if(t.dataset.step){go(t.dataset.step);return}
+  if(t.dataset.go){if(t.dataset.go==="track"&&!personal().some(function(f){return S.appr[f.id]==="a"})){personal().forEach(function(f){if(!S.appr[f.id])S.appr[f.id]="a"});toast("All waiting asks planned so the year can start")}go(t.dataset.go);return}
+  if(t.dataset.sel){S.sel=S.sel===t.dataset.sel?null:t.dataset.sel;render();return}
+  if(t.dataset.pick){storeText();S.sel=t.dataset.pick;render();return}
+  if(t.dataset.lvl){storeText();S.lv[S.sel]=t.dataset.lvl;render();var b=document.querySelector('[data-lvl="'+t.dataset.lvl+'"]');if(b)b.focus();return}
+  switch(t.id){
+    case "btnScan":runScan();break;
+    case "btnApprove":storeText();S.appr[S.sel]="a";toast("Added to this week's plan. A person makes the call or sends the note.");nextInQueue();break;
+    case "btnSkip":storeText();S.appr[S.sel]="s";toast("Not this week. It comes back next Monday.");nextInQueue();break;
+    case "btnAll":storeText();actList().forEach(function(f){if(S.appr[f.id]!=="s")S.appr[f.id]="a"});toast("All added to this week's plan");render();break;
+    case "btnClaude":rewrite();break;
+    case "btnDrvReset":S.plan=JSON.parse(JSON.stringify(PLAN0));PLAN=S.plan;render();toast("Drivers reset to the team plan");break;
+    case "btnAllRows":S.all=!S.all;render();break;
+    case "btnPlay":play(false);break;
+    case "btnAllYear":play(true);break;
+    case "btnReplay":S.frame=0;render();break;
+    case "btnReset":store.del(KEY);S=fresh();S.plan=JSON.parse(JSON.stringify(PLAN0));PLAN=S.plan;render();toast("Started over");break;
+  }
+});
+function storeText(){var ta=$("email");if(!ta||!S.sel||ta.readOnly)return;if(ta.value!==noteFor(FIRM[S.sel]))S.text[S.sel]=ta.value}
+function nextInQueue(){var p=actList(),i=p.findIndex(function(f){return f.id===S.sel});var n=p.slice(i+1).concat(p.slice(0,i)).find(function(f){return !S.appr[f.id]});if(n)S.sel=n.id;render()}
+document.addEventListener("change",function(e){
+  var d=e.target.dataset||{};
+  if(d.drvb){PLAN[d.drvb]=e.target.checked;render();return}
+  if(!d.drv)return;var v=parseFloat(e.target.value);if(isNaN(v)||v<0)v=0;var k=d.drv,id=e.target.id;
+  if(/^a[0-2]$/.test(k))PLAN.asks[+k[1]]=Math.round(v);
+  else if(/^w[0-2]$/.test(k))PLAN.win[+k[1]]=Math.min(100,v)/100;
+  else if(k==="cupShare")PLAN.cupShare=Math.min(100,v)/100;
+  else PLAN[k]=(k==="prospects"||k==="emails"||k==="intros")?Math.round(v):v;
+  render();var el=$(id);if(el)el.focus();
+});
+document.addEventListener("input",function(e){
+  if(e.target.dataset&&e.target.dataset.w){S.w[e.target.dataset.w]=+e.target.value;var id=e.target.id;render();var el=$(id);if(el)el.focus()}
+});
+document.addEventListener("keydown",function(e){
+  if(e.target.closest&&e.target.closest("textarea,input"))return;
+  if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.sel){S.sel=S.sel===e.target.dataset.sel?null:e.target.dataset.sel;render();return}
+  if(S.step==="drivers")return;
+  var i=STEPS.findIndex(function(s){return s.id===S.step});
+  if(e.key==="ArrowRight"&&i<STEPS.length-1){if(S.step==="find"&&!S.scanned){runScan();return}go(STEPS[i+1].id)}
+  if(e.key==="ArrowLeft"&&i>0)go(STEPS[i-1].id);
+});
+
+S=load()||fresh();S.own=S.own||{};S.lv=S.lv||{};
+if(!S.plan||!S.plan.asks)S.plan=JSON.parse(JSON.stringify(PLAN0));if(S.plan.emails==null){S.plan.emails=PLAN0.emails;S.plan.prospects=PLAN0.prospects}if(S.plan.intros==null)S.plan.intros=PLAN0.intros;if(S.plan.hiVal==null)S.plan.hiVal=PLAN0.hiVal;PLAN=S.plan;
+render();initLive();
+})();
+</script>
+
+</html>
