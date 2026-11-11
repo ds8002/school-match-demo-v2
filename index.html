@@ -216,7 +216,27 @@ ol.rungs .cnt{font-size:13px;font-weight:700;color:var(--you);margin-top:auto;pa
 .vc .vsub{font-size:13px;color:var(--muted)}
 .bridge{grid-column:3;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font:700 12px var(--f-mono);color:var(--blue);gap:2px}
 .bridge .arr{font-size:22px;line-height:1}
-@media (max-width:760px){.vgrid{grid-template-columns:minmax(0,1fr)}.vgrid>*{grid-column:1 !important;grid-row:auto !important}.vgrid .ax.y{writing-mode:horizontal-tb;transform:none}.bridge{flex-direction:row;gap:8px}}
+@media (max-width:760px){.vgrid{grid-template-columns:minmax(0,1fr)}.vgrid>*{grid-column:1 !important;grid-row:auto !important}.vgrid .ax.y{writing-mode:horizontal-tb;transform:none}.bridge{flex-direction:row;gap:8px}}/* one-pager: a formatted document, not plain text */
+.op{background:#fff;color:#1d2733;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px rgba(20,40,70,.10);padding:0 0 18px;overflow:hidden;font:15.5px/1.55 Georgia,"Times New Roman",serif}
+.op-top{display:flex;justify-content:space-between;align-items:center;background:#14487C;color:#fff;padding:12px 28px;border-bottom:5px solid #DC2540}
+.op-org{font:800 20px var(--f-display);letter-spacing:2px}
+.op-kind{font:600 13px var(--f-body);letter-spacing:1.5px;text-transform:uppercase;opacity:.9}
+.op-h{margin:20px 28px 2px;font:700 28px/1.15 var(--f-display);color:#14487C}
+.op-h span{color:#DC2540}
+.op-sub{margin:0 28px 14px;font-style:italic;color:#4a5866}
+.op-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 28px 16px}
+.op-stats div{border-left:4px solid #DC2540;background:#f4f6f9;padding:8px 12px;border-radius:0 6px 6px 0}
+.op-stats b{display:block;font:700 24px/1.1 var(--f-display);color:#14487C}
+.op-stats b small{font-size:15px;font-weight:600}
+.op-stats span{font:13px/1.3 var(--f-body);color:#4a5866}
+.op-cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin:0 28px}
+.op h5{margin:0 0 3px;font:700 13px var(--f-body);letter-spacing:1.4px;text-transform:uppercase;color:#14487C}
+.op section{margin-bottom:12px}.op section p,.op-ask p{margin:0}
+.op-ask{margin:4px 28px 14px;background:#fdf1f3;border:1px solid #f3c6cf;border-radius:8px;padding:10px 14px}
+.op-ask .op-opt{margin-top:6px;font:14px/1.4 var(--f-body);color:#4a5866}
+.op-foot{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;margin:0 28px;padding-top:10px;border-top:1px solid #dfe5ec;font:13.5px var(--f-body);color:#4a5866}
+@media (max-width:700px){.op-cols,.op-stats{grid-template-columns:1fr}.op-top,.op-h,.op-sub,.op-stats,.op-cols,.op-ask,.op-foot{margin-left:16px;margin-right:16px}.op-top{padding:10px 16px;margin:0}}
+
 /* step 4 */
 .kan{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px}
 .col{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:220px}
@@ -384,15 +404,16 @@ function warm(f){return !isNew(f)}
 function cellOf(f){return (hiVal(f)?"h":"l")+(warm(f)?"w":"c")}
 var CELLN={hw:"High value, warm",hc:"High value, cold",lw:"Lower value, warm",lc:"Lower value, cold"};
 function isFdn(f){return /Foundation|Fdn/i.test(f.n)||/family|foundation/i.test(f.form||"")}
-/* treatment for each tier, with staff hours per prospect for the year. Tier 1 follows the engine spec (10 §4.1): ~12 cultivation hours each plus ~28 per close, about 16 on average */
+/* treatment for each tier, with staff hours per prospect for the year. Tier 1 = about 10 hours each: first call, game visit, meeting, proposal, follow-up (the tool drafts the materials) */
 var TR={
-  1:{n:"Ask in person",c:"g",h:16},
-  4:{n:"Ask next year",c:"o",h:1},
+  1:{n:"Ask in person",c:"g",h:10},
+  4:{n:"Ask next year",c:"o",h:0.5},
   5:{n:"Easy first step",c:"y",h:1},
-  2:{n:"Intro through an advocate",c:"b",h:3},
-  6:{n:"Grant cycle",c:"b",h:6},
-  3:{n:"Find a way in",c:"",h:0.5},
+  2:{n:"Intro through an advocate",c:"b",h:2},
+  6:{n:"Grant cycle",c:"b",h:3},
+  3:{n:"Find a way in",c:"",h:0.25},
   7:{n:"Email + newsletter",c:"",h:0.1}};
+var TOOLH=1; /* hours a week running the tool: 20 min Monday review, 10 min Friday logging, a few minutes per new brief */
 /* industries, so a cold company can be matched to a peer that already supports DC SCORES */
 var IND={
   law:{n:"law firm",ids:["f3","f5","f6","f8","f16","f17","f18","f19","f20","f37","f72","f73","f74","f81"]},
@@ -432,8 +453,8 @@ function grid(){
   var C={hw:[],hc:[],lw:[],lc:[]};RANK.forEach(function(f){C[cellOf(f)].push(f)});
   var hrs=function(l){return l.reduce(function(s,f){return s+TR[f._tier].h},0)},tot=hrs(RANK)||1;
   var by=function(l){var m={};l.forEach(function(f){m[f._tier]=(m[f._tier]||0)+1});return Object.keys(m).sort(function(a,b){return [1,4,2,6,3,5,7].indexOf(+a)-[1,4,2,6,3,5,7].indexOf(+b)}).map(function(t){return m[t]+" "+TR[t].n.toLowerCase()}).join(" · ")};
-  var box=function(k){var l=C[k];return '<button type="button" data-cell="'+k+'" class="vc '+k+(S.cell===k?' on':'')+'" aria-pressed="'+(S.cell===k)+'"><span class="vt">'+CELLN[k]+'</span><b>'+CELLDO[k].b+'</b><span class="vch">'+esc(CELLDO[k].t)+'</span><span class="vn"><span class="num">'+l.length+'</span> prospects'+(k==="lc"&&queued()?' (+'+queued()+' still being researched)':'')+' &middot; <span class="num">'+Math.round(hrs(l))+'</span> staff hour'+(Math.round(hrs(l))===1?"":"s")+'</span><span class="vsub">'+esc(by(l))+'</span></button>'};
-  return '<div class="vw card"><div class="row2" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">Value &times; warmth: who gets staff time</h3><span class="small muted">About <span class="num">'+Math.round(tot)+'</span> staff hours this year (about <span class="num">'+Math.round(tot/48)+'</span> a week across the team). <span class="num">'+Math.round(100*hrs(C.hw)/tot)+'%</span> go to the high-value, warm box. Click a box to filter the list.</span></div>'+
+  var box=function(k){var l=C[k];return '<button type="button" data-cell="'+k+'" class="vc '+k+(S.cell===k?' on':'')+'" aria-pressed="'+(S.cell===k)+'"><span class="vt">'+CELLN[k]+'</span><b>'+CELLDO[k].b+'</b><span class="vch">'+esc(CELLDO[k].t)+'</span><span class="vn"><span class="num">'+l.length+'</span> prospects'+(k==="lc"&&queued()?' (+'+queued()+' still being researched)':'')+' &middot; <span class="num">'+Math.round(hrs(l))+'</span> staff hour'+(Math.round(hrs(l))===1?"":"s")+' a year</span><span class="vsub">'+esc(by(l))+'</span></button>'};
+  return '<div class="vw card"><div class="row2" style="justify-content:space-between;align-items:baseline"><h3 style="margin:0">Value &times; warmth: who gets staff time</h3><span class="small muted">About <span class="num">'+Math.round(tot/48+TOOLH)+'</span> staff hours a week across the team: about <span class="num">'+Math.round(tot/48)+'</span> on prospects (<span class="num">'+Math.round(100*hrs(C.hw)/tot)+'%</span> of them in the high-value, warm box) and about <span class="num">'+TOOLH+'</span> running the tool. Click a box to filter the list.</span></div>'+
     '<div class="vgrid"><span class="ax y">Value &uarr; &middot; chance &times; gift &times; 3 yrs</span>'+box("hc")+'<span class="bridge" aria-hidden="true"><span class="arr">&larr;</span>Advocates<span class="arr">&rarr;</span></span>'+box("hw")+box("lc")+box("lw")+'<span class="ax x">Cold &larr; Warmth &rarr; Warm &middot; does DC SCORES already know someone there?</span></div>'+
     '<p class="small" style="margin:0"><b>Advocates are the bridge.</b> Each board member gets the 2&ndash;4 companies they can open a door to and is asked for one intro a quarter. Sponsors and Cup captains do the same for peers in their industry. An intro moves a company into the warm column. Email never carries a '+money(PLAN.school)+' ask.</p>'+doors()+'</div>';
 }
@@ -454,7 +475,7 @@ function matOf(f){return (S.lv&&MAT[S.lv[f.id]]&&S.lv[f.id])||"points"}
 
 var ABOUT="DC SCORES has run after-school programs in DC public schools since 1994. Our poet-athletes play on a soccer team, write and perform their own poetry, and lead a service-learning project in their neighborhood.";
 var ABOUT_SHORT="As you've seen, our poet-athletes play soccer, write and perform poetry, and lead service projects in their own DC neighborhoods.";
-function known(v){return v&&!/UNKNOWN/.test(v)?v:""}
+function known(v){return v&&!/unknown|verify|unclear|not confirmed|unconfirmed|\btbd\b|\bn\/a\b|\?/i.test(v)?v:""}
 function near(f){var m=MATCH[f.id];return m&&m.s&&m.d<8?m.s.n.replace(" School","")+" is "+m.d.toFixed(1)+" miles from your office":""}
 function gaveVia(f){var c=f.ch||[];return c.indexOf("Cup")>=0&&c.indexOf("Gala")>=0?"fielding a SCORES Cup team and supporting our gala":c.indexOf("Cup")>=0?"fielding a SCORES Cup team":c.indexOf("Gala")>=0?"supporting our gala":"your support this year"}
 function isCup(f){return (f.ch||[]).indexOf("Cup")>=0}
@@ -487,7 +508,7 @@ function messenger(f){
   var p=playOf(f);
   if(p==="renew")return "Executive Director and Development Director, with the contact they already work with";
   if(isNew(f)){if(f._tier===6)return "The Development Director, through the foundation's normal grant application";var ad=advocate(f);return ad?"An advocate: "+ad.n+" is "+advRole(ad)+" and also a "+IND[INDOF[f.id]].n+". The Development Director asks their contact if they know anyone at "+f.n+". A board member is the backup":"A board member who knows someone at "+f.n+" (the tool checks the board list in Salesforce). If nobody does: an invite only, no ask"}
-  if(isCup(f))return "Their SCORES Cup team captain, who brings in their "+role(f)+". The Development Director makes the first call to the captain";
+  if(isCup(f))return "Their SCORES Cup team captain, who brings in their "+role(f).replace(/\s*\((verify|confirm)[^)]*\)/i,"")+". The Development Director makes the first call to the captain";
   return "The Development Director, with the person they already know there";
 }
 function moment(f){
@@ -497,15 +518,40 @@ function moment(f){
   return "A spring game at "+sch+" (their giving lead comes to watch), then Signing Day at the SCORES Cup, June 12";
 }
 
-/* short note: always to someone who already knows DC SCORES */
+/* facts about the matched school, for the note and the one-pager */
+function schFacts(f){
+  var m=MATCH[f.id],ok=m&&m.s;
+  return {nm:ok?m.s.n.replace(" School",""):"a DC SCORES school",sh:shortSchool(f),ward:ok&&m.s.w?"Ward "+m.s.w:"",dist:ok&&m.d<15?m.d.toFixed(1)+" miles from your office":"",kids:kidsFor(offer(f).amt)};
+}
+function theirs(w){w=w.replace("your office","their office");return w.charAt(0).toUpperCase()+w.slice(1)}
+function whyLine(f){var e=known(f.ea);return e?"Here's why: "+e.charAt(0).toLowerCase()+e.slice(1).replace(/\.?\s*$/,"."):(f.pipe==="local"?f.n+" already gives back here in DC.":f.n+" already funds youth programs in DC much like ours.")}
+var SIG="\n\nThank you,\n\n[Your name]\nDevelopment Director, DC SCORES\n[Phone]  |  [Email]";
+var GAMES="Spring games run in April and May, after school, and take about an hour.";
+/* short note: always to someone who already knows DC SCORES. A person edits it and sends it from their own inbox */
 function noteFor(f){
-  var p=playOf(f),o=offer(f),sch=schoolText(f),sig="\n\n[Development Director]\nDC SCORES";
+  var p=playOf(f),o=offer(f),x=schFacts(f);
+  var where=x.sh+(x.ward?" in "+x.ward:"")+(x.dist?" is "+x.dist+" and":"")+" still needs a partner for next year";
   var ad=isNew(f)?advocate(f):null;
-  if(ad)return "Subject: Do you know anyone at "+f.n+"?\n\nHi [First name],\n\nThank you for "+(ad.pipe==="renew"?"sponsoring "+(ad.sp||"your DC SCORES school"):"fielding "+ad.n+"'s SCORES Cup team")+". Our research list flagged "+f.n+", another "+IND[INDOF[f.id]].n+" here in DC. Why they fit: "+((known(f.ea)?known(f.ea).replace(/\.?\s*$/,"."):"")||f.n+" already funds youth programs in DC much like ours.")+"\n\nWe don't want to cold-email them. If you know anyone there, would you send a two-line intro, or bring them along to a spring game at "+shortSchool(f)+"? No ask this year. We just want them to see the kids play.\n\nA one-page summary is attached in case it helps."+sig;
-  if(isNew(f))return "Subject: Do you know anyone at "+f.n+"?\n\nHi [Board member's first name],\n\nOur research list flagged "+f.n+". Why they fit: "+((known(f.ea)?known(f.ea).replace(/\.?\s*$/,"."):"")||(f.pipe==="local"?f.n+" already gives back here in DC.":f.n+" already funds youth programs in DC much like ours."))+(MATCH[f.id]&&MATCH[f.id].s&&MATCH[f.id].d<15?" Their office is "+MATCH[f.id].d.toFixed(1)+" miles from "+shortSchool(f)+", which still needs a partner.":"")+"\n\nWe don't want to cold-email them. If you know anyone there, could you send them a two-line intro? We'd only invite them to see a game at "+shortSchool(f)+" or come to the SCORES Cup as our guests. No ask this year.\n\nA one-page summary is attached in case it helps."+sig;
-  if(p==="renew")return "Subject: Three more years at "+(f.sp||"your school")+"\n\nHi [First name],\n\nThank you for sponsoring "+(f.sp||"your DC SCORES school")+". Your season report is attached.\n\n"+fitLine(f)+" Could we meet before the spring season starts to talk about renewing early, and about a second school?"+sig;
-  if(isCup(f))return "Subject: Your Cup team and "+shortSchool(f)+"\n\nHi [Captain's first name],\n\nThank you for captaining "+f.n+"'s SCORES Cup team. "+ABOUT_SHORT+"\n\n"+shortSchool(f)+" is "+(MATCH[f.id]&&MATCH[f.id].s&&MATCH[f.id].d<15?MATCH[f.id].d.toFixed(1)+" miles from your office and ":"")+"still needs a partner. Would you be open to bringing whoever runs giving at "+f.n+" to one of our spring games there? I'd love for them to see it before we talk about anything else.\n\nI've attached a one-page summary you can forward."+sig;
-  return "Subject: "+f.n+" and "+shortSchool(f)+"\n\nHi [First name],\n\nThank you for "+gaveVia(f)+". "+ABOUT_SHORT+"\n\n"+fitLine(f)+" Would you like to come see a spring game at "+shortSchool(f)+"? I'd love to show you what a school partnership looks like before we talk about it."+sig;
+  if(ad)return "Subject: A quick favor: do you know anyone at "+f.n+"?\n\nHi [First name],\n\nThank you for "+(ad.pipe==="renew"?"sponsoring "+(ad.sp||"your DC SCORES school"):"fielding "+ad.n+"'s SCORES Cup team")+" this year. Having companies like yours with us means a lot to our poet-athletes.\n\nI'm writing with a small favor. We're looking for partners for the schools that still need one, and "+f.n+", another "+IND[INDOF[f.id]].n+" here in DC, keeps coming up in our research. "+whyLine(f)+" "+theirs(where)+".\n\nWe'd much rather meet them through someone they know than send a cold email. If you have a contact there, would you be willing to send a two-line intro, or bring them as your guest to a spring game at "+x.sh+" or to the SCORES Cup on June 12? There is no ask this year. We'd just like them to see the kids play.\n\nI've attached a one-page summary in case it's useful, and I'm happy to draft the intro for you if that makes it easier."+SIG;
+  if(isNew(f))return "Subject: Do you know anyone at "+f.n+"?\n\nHi [Board member's first name],\n\nAs part of our board intro plan, the tool flagged "+f.n+" as a strong fit for one of our schools. "+whyLine(f)+" "+theirs(where)+".\n\nIf you know anyone there, would you be willing to send them a two-line intro? We'd invite them to a spring game at "+x.sh+" or to the SCORES Cup on June 12 as our guests. There is no ask this year. "+GAMES+"\n\nI've attached a one-page summary you can forward, and I'm glad to draft the intro so it only takes you a minute."+SIG;
+  if(p==="renew")return "Subject: Three more years at "+(f.sp||"your school")+"\n\nHi [First name],\n\nThank you for sponsoring "+(f.sp||"your DC SCORES school")+". This year's season report is attached: the games, the end-of-season poetry slam and the service-learning project your partnership made possible.\n\n"+fitLine(f)+"\n\nBefore the spring season starts, could we find 30 minutes to talk about renewing early for another three years, and about a second school? I'd also be glad to set up a visit to a spring game so your team can see the season up close."+SIG;
+  if(isCup(f))return "Subject: Bringing "+f.n+"'s giving lead to a game at "+x.sh+"\n\nHi [Captain's first name],\n\nThank you for captaining "+f.n+"'s SCORES Cup team this year. Teams like yours are a big part of what the Cup raises, and our poet-athletes notice when the same companies come back each June.\n\nI wanted to share something before spring. "+where.charAt(0).toUpperCase()+where.slice(1)+". A partnership there covers about "+x.kids+" poet-athletes for a full year: coach stipends, buses to games, uniforms, and the poetry and service-learning work.\n\nWould you be open to bringing whoever leads giving or community impact at "+f.n+" to one of our spring games there? "+GAMES+" They'd see the kids play and hear a few of them perform their poems, and there's no ask at the game itself.\n\nI've attached a one-page summary you can forward. If it's easier, I'm happy to set up a 15-minute call with you first."+SIG;
+  return "Subject: "+f.n+" and "+x.sh+"\n\nHi [First name],\n\nThank you for "+gaveVia(f)+" this year. "+ABOUT_SHORT+"\n\n"+fitLine(f)+"\n\nWould you like to come see a spring game at "+x.sh+"? "+GAMES+" It's the best way to see what a school partnership looks like before we talk about one.\n\nI've attached a one-page summary in case it's helpful to share with your team."+SIG;
+}
+/* one-pager as a formatted document */
+function onePagerHTML(f){
+  var o=offer(f),r=rung(f),x=schFacts(f),nw=isNew(f),e=esc;
+  var stat=function(v,l){return '<div><b>'+v+'</b><span>'+l+'</span></div>'};
+  var stats=(nw?stat("Free","first step: come to a game"):stat(e(money(o.amt))+'<small>/yr</small>',"for 3 years ("+e(money(o.amt*PLAN.years))+" in all)"))+stat("~"+x.kids,"poet-athletes funded each year")+(x.dist?stat(e(x.dist.replace(" from your office","")),"from your office"):stat(e(x.ward||"DC"),"a DC public school"));
+  var sec=function(h,b){return '<section><h5>'+h+'</h5><p>'+b+'</p></section>'};
+  return '<div class="op" role="document" aria-label="One-pager">'+
+    '<div class="op-top"><span class="op-org">DC SCORES</span><span class="op-kind">'+(nw?"An invitation":"School partnership proposal")+'</span></div>'+
+    '<h4 class="op-h">'+e(f.n)+' <span>+</span> '+e(x.nm)+'</h4><p class="op-sub">'+(nw?"Come see a DC SCORES school in action":"A three-year partnership with one DC public school")+'</p>'+
+    '<div class="op-stats">'+stats+'</div>'+
+    '<div class="op-cols"><div>'+sec("Who we are",e(ABOUT))+sec("The school",e(x.nm+(x.ward?", "+x.ward:"")+". "+(x.dist?x.dist.charAt(0).toUpperCase()+x.dist.slice(1)+". ":"")+"It still needs a partner for next year."))+'</div>'+
+    '<div>'+sec("What a partnership pays for",e(moneyLine(f)))+sec("What your people get","Game days to coach, an invitation to the end-of-season poetry slam, a SCORES Cup team, and a season report each fall and spring.")+'</div></div>'+
+    '<div class="op-ask"><h5>'+(nw?"The first step":"What we're asking")+'</h5><p>'+e(nw?"Come to a spring game at "+x.nm+" or to the SCORES Cup (June 12) as our guests. There is no ask this year.":r.t.replace("their office","your office"))+'</p>'+(nw?'':'<p class="op-opt">Options: Team Share (half a school) '+e(money(PLAN.team))+' a year &middot; Whole school '+e(money(PLAN.school))+' a year &middot; both for 3 years</p>')+'</div>'+
+    '<div class="op-foot"><span>[Your name], Development Director</span><span>[Phone] &middot; [Email]</span><span>dcscores.org</span></div></div>';
 }
 /* one-pager the contact can forward inside the company */
 function onePager(f){
@@ -529,9 +575,19 @@ function points(f){
   if(nw){var ad=advocate(f);if(ad)out.push(["Who opens the door",[ad.n+" is "+advRole(ad)+" and also a "+IND[INDOF[f.id]].n+": ask their contact for the intro","Peers recruiting peers: log who made the intro so the review can compare introduced and cold prospects"]])}
   if(nw)out.push(["The ask this year",["None. Only an invite to a game, the poetry slam or the Cup","If they come and like it: a Cup team next year ("+money(PLAN.cupFee)+"), then a school"]]);
   else out.push(["The ask: one step up",[rung(f).t,"First call: ask the captain or contact to bring their giving lead to a game. Don't ask for "+money(o.amt)+" on the first call","What they get: game days to coach, the poetry slam, a season report each fall and spring"]]);
-  var w=[];if(f.flags)f.flags.split("|").forEach(function(x){if(x.trim())w.push(x.trim())});if(f.res==="draft")w.push("Draft research: a person checks these facts before anyone reaches out");
-  if(w.length)out.push(["Check before you reach out",w,1]);
+  out.push(["Before you reach out",prep(f),1]);
   return out;
+}
+/* a short, concrete prep list for the person making the call */
+function prep(f){
+  var p=playOf(f),x=schFacts(f);
+  if(isNew(f)){var ad=advocate(f);
+    if(f._tier===6)return ["Add the foundation's next grant deadline to the calendar","Match the request to their focus: "+x.nm+" and about "+x.kids+" poet-athletes","Ask a board member to review the application before it goes in"];
+    if(ad)return ["Look up who at "+ad.n+" DC SCORES already works with (Salesforce)","Check the board list for anyone at "+f.n+", as a second way in","Have a spring game date at "+x.sh+" ready to offer as the invite"];
+    return ["Check the board list in Salesforce for anyone at "+f.n,"Have a spring game date at "+x.sh+" ready to offer as the invite","Send the one-pager with the intro, not before it"]}
+  if(p==="renew")return ["Pull this year's season report for "+(f.sp||"their school"),"Check the renewal date and their main contact in Salesforce","Bring "+x.sh+" as the option for a second school"];
+  if(isCup(f))return ["Confirm the captain's name and email from this year's SCORES Cup roster","Pick two spring game dates at "+x.sh+" to offer (the program team has the schedule)","Bring the one-pager and a team photo from "+x.sh];
+  return ["Confirm the contact's name and role in Salesforce","Pick two spring game dates at "+x.sh+" to offer","Bring the one-pager to the visit"];
 }
 function todo(f){
   var p=playOf(f),sch=shortSchool(f);
@@ -580,11 +636,11 @@ function go(id){S.step=id;render();try{window.scrollTo(0,0)}catch(e){}}
 /* step 1 */
 var SCAN=[
   {k:"upgrade",n:"DC SCORES donor records (Salesforce)",d:function(){var a=D.agg;return a.gifts.toLocaleString()+" FY26 gifts from "+a.orgs+" organizations and "+a.indiv+" individuals. Looking for Cup teams and gala sponsors with no school of their own."}},
-  {k:"renew",n:"Current school sponsors",d:function(){return SPONSORED+" schools have a sponsor on record. Looking for sponsors who could renew early or add a second school."}},
+  {k:"renew",n:"Current school sponsors",d:function(){return "Schools that already have a sponsor on record. Looking for sponsors who could renew early or add a second school."}},
   {k:"peer",n:"Funders of similar DC nonprofits",d:function(){return "Annual reports and foundation tax filings (990s) of peer youth and arts nonprofits. Looking for funders who don't give to DC SCORES yet."}},
   {k:"local",n:"DC companies that give publicly",d:function(){return "Corporate giving pages and public lists of top DC corporate givers, checked against DC SCORES' records. Looking for companies near an open school that have never given. New names are marked as drafts until a person checks them."}},
   {k:"queue",n:"Other organizations that gave in FY26",d:function(){var a=D.agg;return "Smaller company and foundation donors in the same "+a.orgs+"-organization export. Added to the list and queued for research before anyone is asked."}},
-  {k:"schools",n:"Schools that still need a partner",d:function(){return D.schools.length+" DC SCORES schools checked against sponsor records so nobody is offered a school that is already taken."}}
+  {k:"schools",n:"Schools that still need a partner",d:function(){return "Every DC SCORES school is checked against sponsor records so nobody is offered a school that is already taken."}}
 ];
 function queued(){return Math.max(0,PLAN.prospects-D.firms.length)}
 /* the not-yet-researched prospects are split so new and give-more come out about even */
@@ -633,7 +689,7 @@ function vRank(){
   var rows=shown.map(function(f,i){
     var o=offer(f),sel=S.sel===f.id;
     var r='<tr class="row" data-sel="'+f.id+'" tabindex="0"><td class="num">'+(i+1)+'</td><td><b>'+esc(f.n)+'</b><br><span class="small muted">'+esc(CH[f.pipe].n)+'</span></td><td>'+dots(f.C)+'</td><td>'+dots(f.A)+'</td><td>'+dots(f.R)+'</td><td class="r tot num">'+score(f)+'<span class="small muted">/'+maxScore()+'</span></td><td class="r num">'+money(ev(f))+'</td><td>'+tierTag(f._tier)+'<br><span class="small muted">'+CELLN[cellOf(f)]+'</span></td><td>'+(f._tier===6?'Grant request<br><span class="small muted num">'+money(o.amt)+'/yr</span>':isNew(f)?'No ask this year<br><span class="small muted">Invite first</span>':esc(o.n)+'<br><span class="small muted num">'+money(o.amt)+'/yr</span>')+'</td><td class="small">'+(f._tier<=2?esc(shortSchool(f)):'<span class="muted">&ndash;</span>')+'</td></tr>';
-    if(sel)r+='<tr><td colspan="10" style="background:var(--panel2)"><p class="small" style="margin:0 0 8px"><b>Warmth signals:</b> '+esc(sigLine(f))+'</p><div class="detail"><div><b>Capacity '+f.C+'</b>'+esc(f.ec||"Unknown")+'</div><div><b>Alignment '+f.A+'</b>'+esc(f.ea||"Unknown")+'</div><div><b>Relationship '+f.R+'</b>'+esc(f.er||"Unknown")+'</div></div>'+(f.flags?'<p class="small" style="margin:8px 0 0"><span class="tag o">Check first</span> '+esc(f.flags)+'</p>':'')+'</td></tr>';
+    if(sel)r+='<tr><td colspan="10" style="background:var(--panel2)"><p class="small" style="margin:0 0 8px"><b>Warmth signals:</b> '+esc(sigLine(f))+'</p><div class="detail"><div><b>Capacity '+f.C+'</b>'+esc(known(f.ec)||"Scored from public giving records and company size")+'</div><div><b>Alignment '+f.A+'</b>'+esc(known(f.ea)||"Scored from their stated giving focus")+'</div><div><b>Relationship '+f.R+'</b>'+esc(known(f.er)||(isNew(f)?"No gift to DC SCORES yet. The tool looks for an advocate":"Gives to DC SCORES today"))+'</div></div></td></tr>';
     return r}).join("");
   return '<div class="head"><div><div class="eyebrow">Step 2 of 4 &middot; Evaluation</div><h2>Rank every prospect on DC SCORES\' own criteria</h2><p class="lede">These are the three 1&ndash;3 scores DC SCORES already uses. The tool also puts each prospect in one box of a value &times; warmth grid, and the box decides the channel and the staff time. The top '+pers.length+' high-value, warm prospects are asked in person this year. Email is only for the lower-value, cold box. Click a box or a row to see why.</p></div>'+who("Tool scores, director checks","About 10 minutes to look over the list")+'</div>'+
     '<div class="crit">'+cards+'</div>'+grid()+
@@ -656,9 +712,9 @@ function vAct(){
   if(mt==="points"){
     body='<div class="tp">'+points(f).map(function(g){return '<div'+(g[2]?' class="warn"':'')+'><h4>'+esc(g[0])+'</h4><ul>'+g[1].map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul></div>'}).join("")+'</div>';
   }else if(mt==="note"){
-    body='<div><label for="email" style="font:700 18px var(--f-display);display:block;margin-bottom:6px">Short note (a person edits it and sends it from their own inbox)</label><textarea id="email" spellcheck="true">'+esc(S.text[f.id]||noteFor(f))+'</textarea></div>';
+    body='<div><label for="email" style="font:700 18px var(--f-display);display:block;margin-bottom:6px">Short note (a person edits it and sends it from their own inbox)</label><textarea id="email" spellcheck="true" style="min-height:560px">'+esc(S.text[f.id]||noteFor(f))+'</textarea></div>';
   }else{
-    body='<div><label for="email" style="font:700 18px var(--f-display);display:block;margin-bottom:6px">One-pager (attached to the note, easy to forward)</label><textarea id="email" readonly style="font:14.5px/1.5 var(--f-mono)">'+esc(onePager(f))+'</textarea></div>';
+    body='<div><div style="font:700 18px var(--f-display);margin-bottom:6px">One-pager (attached to the note, easy to forward)</div>'+onePagerHTML(f)+'</div>';
   }
   var st=S.appr[f.id];
   var tagT=nw?'<span class="tag b">New company</span>':'<span class="tag o">Current donor</span>';
@@ -669,7 +725,7 @@ function vAct(){
     '<div><h3 style="font-size:18px;margin-bottom:8px">What the tool prepares</h3>'+tabs+'</div>'+
     '<p class="note" style="margin:0">The tool does the homework: research, the matched school, timing and these materials. People do the asking. Nothing is sent automatically.</p>'+body+
     '<div class="row2"><button class="btn go" type="button" id="btnApprove">Add to this week\'s plan</button><button class="btn no" type="button" id="btnSkip">Not this week</button><button class="btn" type="button" id="btnClaude"'+(sampleFn&&mt==="note"?'':' hidden')+'>Rewrite with Claude</button><span class="note" id="liveNote"></span></div></div>';
-  return '<div class="head"><div><div class="eyebrow">Step 3 of 4 &middot; Recommended actions</div><h2>Who asks, where, and for what</h2><p class="lede">A ' + money(PLAN.school) + '-a-year sponsorship comes from a conversation, not a cold email. For each high-value company the tool says who already knows them, the best moment to ask, and the next step up, then prepares what that person needs. Email is used only for the lower-value, cold box.</p></div><div class="row2">'+who("Development Director","About 30 minutes each Monday to pick the week\'s calls. Captains and board members carry many of the asks")+'<span class="num">'+nA+' of '+all.length+' planned</span><button class="btn ok sm" type="button" id="btnAll">Plan all '+all.length+'</button></div></div>'+
+  return '<div class="head"><div><div class="eyebrow">Step 3 of 4 &middot; Recommended actions</div><h2>Who asks, where, and for what</h2><p class="lede">A ' + money(PLAN.school) + '-a-year sponsorship comes from a conversation, not a cold email. For each high-value company the tool says who already knows them, the best moment to ask, and the next step up, then prepares what that person needs. Email is used only for the lower-value, cold box.</p></div><div class="row2">'+who("Development Director","About 20 minutes each Monday to pick the week\'s calls. Captains and board members carry many of the asks")+'<span class="num">'+nA+' of '+all.length+' planned</span><button class="btn ok sm" type="button" id="btnAll">Plan all '+all.length+'</button></div></div>'+
     ladder()+
     '<div class="act"><div class="queue" aria-label="This year\'s asks">'+q+'</div>'+plan+'</div>'+foot(null,null,false);
 }
@@ -700,9 +756,9 @@ function vTrack(){
   var nI=introList().length,cI=Math.round(nI*0.6);
   var nC=RANK.filter(function(f){return f._tier===3||f._tier===7}).length+queued(),cC=Math.round(nC*0.08);
   var strip='<div class="newstrip"><span><b>Introduced vs. cold</b> <span class="small muted">(simulated)</span></span><span>Introduced by an advocate: <b class="num">'+cI+'</b> of '+nI+' came to a game ('+Math.round(100*cI/(nI||1))+'%)</span><span>Email and invites only: <b class="num">'+cC+'</b> of '+nC+' came to an event ('+Math.round(100*cC/(nC||1))+'%)</span><span><b>$0</b> counted from new companies. The ones who came join next year\'s warm list</span></div>';
-  var kp=done?('<div class="funnel">'+[["Prospects found",PLAN.prospects,"step 1"],["Asked in person",O.n,"the warm tier"],["Met at a game or visit",O.met,"about 3 in 4"],["Proposals",O.prop,"written offers"],["Schools signed",O.signed,"about 1 in 5 meetings &middot; "+money(O.signed*PLAN.school)+"/yr"]].map(function(x,i,a){return '<div class="fs'+(i===a.length-1?' last':'')+'"><span class="v num">'+x[1]+'</span><span class="l">'+x[0]+'</span><span class="t">'+x[2]+'</span></div>'}).join('<span class="fa" aria-hidden="true">&rarr;</span>')+'</div>'+strip+'<p class="note" style="margin:0">Staff time: about 1.5 hours a week with the tool, plus the in-person asks (about 16 hours each over the year, including closing). Board members, sponsors and Cup captains carry the intros.</p>'):'';
+  var kp=done?('<div class="funnel">'+[["Prospects found",PLAN.prospects,"step 1"],["Asked in person",O.n,"the warm tier"],["Met at a game or visit",O.met,"about 3 in 4"],["Proposals",O.prop,"written offers"],["Schools signed",O.signed,"about 1 in 5 meetings &middot; "+money(O.signed*PLAN.school)+"/yr"]].map(function(x,i,a){return '<div class="fs'+(i===a.length-1?' last':'')+'"><span class="v num">'+x[1]+'</span><span class="l">'+x[0]+'</span><span class="t">'+x[2]+'</span></div>'}).join('<span class="fa" aria-hidden="true">&rarr;</span>')+'</div>'+strip+'<p class="note" style="margin:0">Staff time: about 7 hours a week across the team, mostly on the in-person asks (about 10 hours each over the year, from the first call to the proposal) plus about 1 hour running the tool. Board members, sponsors and Cup captains carry the intros.</p>'):'';
   var learn=done?learnBlock(O,signedList):'';
-  return '<div class="head"><div><div class="eyebrow">Step 4 of 4 &middot; Tracking results</div><h2>Follow every ask until it signs or stops</h2><p class="lede">Each intro, game visit, meeting and signed school is logged, with who opened the door. The June and December reviews use these numbers to re-score prospects and move staff hours to what worked. We track meetings and visits, not email replies.</p></div>'+who("Staff log each step, tool keeps score","About 15 minutes on Friday")+
+  return '<div class="head"><div><div class="eyebrow">Step 4 of 4 &middot; Tracking results</div><h2>Follow every ask until it signs or stops</h2><p class="lede">Each intro, game visit, meeting and signed school is logged, with who opened the door. The June and December reviews use these numbers to re-score prospects and move staff hours to what worked. We track meetings and visits, not email replies.</p></div>'+who("Staff log each step, tool keeps score","About 10 minutes on Friday")+
     '<div class="row2"><button class="btn go" type="button" id="btnPlay"'+(done?' hidden':'')+'>'+(fr===0?"Play year 1 (2027)":done?"Done":"Next: "+FR[fr].m)+'</button><button class="btn" type="button" id="btnAllYear"'+(done?' hidden':'')+'>Skip to December</button><button class="btn sm" type="button" id="btnReplay"'+(fr===0?' hidden':'')+'>Replay</button></div></div>'+
     '<div class="card" style="display:flex;flex-direction:column;gap:12px">'+months+'<div style="font:700 20px var(--f-display)" aria-live="polite">'+esc(nowTxt)+'</div><div class="kan">'+cols+'</div><p class="note" style="margin:0">Simulated year. All '+PLAN.asks[0]+' asks go to the high-value, warm box. About 3 in 4 agree to meet at a game or a site visit, and about 1 in 5 meetings becomes a sponsor, which is the plan\'s '+Math.round(PLAN.win[0]*100)+'% year-1 rate. These rates are our assumptions. Real results replace them once the pilot starts.</p></div>'+kp+learn+foot();
 }
@@ -754,7 +810,7 @@ function vDrivers(){
   var yrRows=M.yrs.map(function(y){return '<tr><td>'+y.y+'</td><td class="r num">'+y.asks+'</td><td class="r num">'+pctTxt(y.win)+'</td><td class="r num">'+y.sch+'</td><td class="r num">'+y.cum+'</td><td class="r num">'+money(y.rev)+'</td></tr>'}).join("");
   var diff=M.total-B.total;
   var scen='<div class="row2">'+Object.keys(SCEN).map(function(k){var on=!ch(P.win,SCEN[k].win);return '<button class="btn sm'+(on?' go':'')+'" type="button" data-scen="'+k+'">'+esc(SCEN[k].n)+'</button>'}).join("")+'<button class="btn sm" type="button" id="btnDrvReset">Reset all to team plan</button></div>';
-  var other=[["Staff time","About 1.5 hours a week with the tool: 30 min Monday review, 15 min Friday logging, 10 min per new brief, 1 hour a month. Plus about one in-person ask every two weeks, which the tool makes faster to prepare."],
+  var other=[["Staff time","About 7 hours a week across the team. Running the tool is about 1 of them (20 min Monday review, 10 min Friday logging, a few minutes per new brief). Most of the rest goes to the 20 in-person asks, about 10 hours each over the year."],
     ["Tool cost","2 AI seats &times; $20 a month = $480 a year (lower at nonprofit rates). No custom model to train."],
     ["Scoring","DC SCORES’ own 1&ndash;3 rubric for Capacity, Alignment and Relationship (client Q&amp;A, Q35). Equal weights by default. Ties go to the stronger relationship."],
     ["Who gets asked","Value x warmth. The top "+P.asks[0]+" high-value, warm prospects are asked in person. The top "+P.intros+" high-value, cold companies get an intro through an advocate; foundations go through their grant cycle. Lower-value, warm prospects get an easy first step. Email, the newsletter and event invites are only for the lower-value, cold box. Nothing is sent automatically."],
